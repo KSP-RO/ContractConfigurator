@@ -37,6 +37,7 @@ namespace ContractConfigurator
         public static ContractVesselTracker Instance { get; private set; }
         public static EventData<GameEvents.HostTargetAction<Vessel, string>> OnVesselAssociation = new EventData<GameEvents.HostTargetAction<Vessel, string>>("OnVesselAssociation");
         public static EventData<GameEvents.HostTargetAction<Vessel, string>> OnVesselDisassociation = new EventData<GameEvents.HostTargetAction<Vessel, string>>("OnVesselDisassociation");
+        public static EventData<GameEvents.HostTargetAction<Vessel, string>> OnKeyedVesselDestroyed = new EventData<GameEvents.HostTargetAction<Vessel, string>>("OnKeyedVesselDestroyed");
 
         private Dictionary<string, VesselInfo> vessels = new Dictionary<string, VesselInfo>();
         private Vessel lastBreak = null;
@@ -101,14 +102,21 @@ namespace ContractConfigurator
             Vessel vessel = FlightGlobals.FindVessel(id);
             if (vessel == null || vessel.state == Vessel.State.DEAD)
             {
-                id = Guid.Empty;
                 vessels.Remove(key);
+                StartCoroutine(FireKeyedVesselDestroyedWhenContractsLoaded(vessel, key));
             }
             else if (vi.hash == 0 && HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
                 vi.hash = vessel.GetHashes().FirstOrDefault();
                 LoggingUtil.LogVerbose(this, "Setting hash for {0} on load to: {1}", id, vi.hash);
             }
+        }
+
+        IEnumerator<YieldInstruction> FireKeyedVesselDestroyedWhenContractsLoaded(Vessel vessel, string key)
+        {
+            while (!ContractSystem.loaded)
+                yield return null;
+            OnKeyedVesselDestroyed.Fire(new GameEvents.HostTargetAction<Vessel, string>(vessel, key));
         }
 
         public override void OnSave(ConfigNode node)
@@ -243,13 +251,14 @@ namespace ContractConfigurator
             }
 
             // Try to change any associations over if this is due to a docking event
-                foreach (string key in GetAssociatedKeys(vessel).ToList())
+            foreach (string key in GetAssociatedKeys(vessel).ToList())
             {
                 LoggingUtil.LogVerbose(this, "    checking key {0}", key);
 
                 // Check if we need to switch over to the newly created vessel
                 VesselInfo vi = vessels[key];
-                Vessel newVessel = FlightGlobals.Vessels.Find(v => {
+                Vessel newVessel = FlightGlobals.Vessels.Find(v =>
+                {
                     if (v != null && v != vessel)
                     {
                         LoggingUtil.LogVerbose(this, "    loading protovessel for {0}", v.vesselName);
@@ -274,6 +283,7 @@ namespace ContractConfigurator
                 else
                 {
                     AssociateVessel(key, null);
+                    OnKeyedVesselDestroyed.Fire(new GameEvents.HostTargetAction<Vessel, string>(vessel, key));
                 }
             }
         }

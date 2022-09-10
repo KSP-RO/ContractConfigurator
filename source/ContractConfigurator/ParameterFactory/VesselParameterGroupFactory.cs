@@ -21,6 +21,7 @@ namespace ContractConfigurator
         protected bool dissassociateVesselsOnContractFailure;
         protected bool dissassociateVesselsOnContractCompletion;
         protected bool hideVesselName;
+        protected bool resetChildrenWhenVesselDestroyed;
 
         public IEnumerable<string> Vessel { get { return vesselList.Select<VesselIdentifier, string>(vi => vi.identifier); } }
 
@@ -36,13 +37,15 @@ namespace ContractConfigurator
             valid &= ConfigNodeUtil.ParseValue<bool>(configNode, "dissassociateVesselsOnContractFailure", x => dissassociateVesselsOnContractFailure = x, this, true);
             valid &= ConfigNodeUtil.ParseValue<bool>(configNode, "dissassociateVesselsOnContractCompletion", x => dissassociateVesselsOnContractCompletion = x, this, false);
             valid &= ConfigNodeUtil.ParseValue<bool>(configNode, "hideVesselName", x => hideVesselName = x, this, false);
+            valid &= ConfigNodeUtil.ParseValue<bool>(configNode, "resetChildrenWhenVesselDestroyed", x => resetChildrenWhenVesselDestroyed = x, this, false);
 
             return valid;
         }
 
         public override ContractParameter Generate(Contract contract)
         {
-            return new Parameters.VesselParameterGroup(title, define, defineList, Vessel, duration.Value, dissassociateVesselsOnContractFailure, dissassociateVesselsOnContractCompletion, hideVesselName);
+            return new Parameters.VesselParameterGroup(title, define, defineList, Vessel, duration.Value,
+                dissassociateVesselsOnContractFailure, dissassociateVesselsOnContractCompletion, hideVesselName, resetChildrenWhenVesselDestroyed);
         }
     }
 }

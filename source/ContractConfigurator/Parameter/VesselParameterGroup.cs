@@ -21,6 +21,7 @@ namespace ContractConfigurator.Parameters
         protected bool dissassociateVesselsOnContractFailure;
         protected bool dissassociateVesselsOnContractCompletion;
         protected bool hideVesselName;
+        protected bool resetChildrenWhenVesselDestroyed;
 
         public IEnumerable<string> VesselList { get { return vesselList; } }
         protected double duration { get; set; }
@@ -45,7 +46,7 @@ namespace ContractConfigurator.Parameters
         }
 
         public VesselParameterGroup(string title, string define, string defineList, IEnumerable<string> vesselList, double duration,
-            bool dissassociateVesselsOnContractFailure, bool dissassociateVesselsOnContractCompletion, bool hideVesselName)
+            bool dissassociateVesselsOnContractFailure, bool dissassociateVesselsOnContractCompletion, bool hideVesselName, bool resetChildrenWhenVesselDestroyed)
             : base(title)
         {
             this.define = define;
@@ -55,6 +56,7 @@ namespace ContractConfigurator.Parameters
             this.dissassociateVesselsOnContractFailure = dissassociateVesselsOnContractFailure;
             this.dissassociateVesselsOnContractCompletion = dissassociateVesselsOnContractCompletion;
             this.hideVesselName = hideVesselName;
+            this.resetChildrenWhenVesselDestroyed = resetChildrenWhenVesselDestroyed;
             waiting = false;
 
             CreateVesselListParameter();
@@ -370,6 +372,7 @@ namespace ContractConfigurator.Parameters
             }
             node.AddValue("dissassociateVesselsOnContractFailure", dissassociateVesselsOnContractFailure);
             node.AddValue("dissassociateVesselsOnContractCompletion", dissassociateVesselsOnContractCompletion);
+            node.AddValue("resetChildrenWhenVesselDestroyed", resetChildrenWhenVesselDestroyed);
             if (hideVesselName)
             {
                 node.AddValue("hideVesselName", hideVesselName);
@@ -386,6 +389,7 @@ namespace ContractConfigurator.Parameters
                 dissassociateVesselsOnContractFailure = ConfigNodeUtil.ParseValue<bool?>(node, "dissassociateVesselsOnContractFailure", (bool?)true).Value;
                 dissassociateVesselsOnContractCompletion = ConfigNodeUtil.ParseValue<bool?>(node, "dissassociateVesselsOnContractCompletion", (bool?)false).Value;
                 hideVesselName = ConfigNodeUtil.ParseValue<bool?>(node, "hideVesselName", (bool?)false).Value;
+                resetChildrenWhenVesselDestroyed = ConfigNodeUtil.ParseValue<bool?>(node, "resetChildrenWhenVesselDestroyed", (bool?)false).Value;
                 vesselList = ConfigNodeUtil.ParseValue<List<string>>(node, "vessel", new List<string>());
                 if (node.HasValue("completionTime"))
                 {
@@ -407,8 +411,12 @@ namespace ContractConfigurator.Parameters
                     }
                 }
 
-                // Register this early, otherwise we'll miss the event
+                // Register these early, otherwise we'll miss the event
                 ConfiguredContract.OnContractLoaded.Add(new EventData<ConfiguredContract>.OnEvent(OnContractLoaded));
+                if (resetChildrenWhenVesselDestroyed && Root.ContractState == Contract.State.Active)
+                {
+                    ContractVesselTracker.OnKeyedVesselDestroyed.Add(OnKeyedVesselDestroyed);
+                }
 
                 // Create the parameter delegate for the vessel list
                 CreateVesselListParameter();
@@ -442,19 +450,20 @@ namespace ContractConfigurator.Parameters
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselChange.Remove(new EventData<Vessel>.OnEvent(OnVesselChange));
-            ContractVesselTracker.OnVesselAssociation.Remove(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselAssociation));
-            ContractVesselTracker.OnVesselDisassociation.Remove(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselDisassociation));
+            GameEvents.onVesselChange.Remove(OnVesselChange);
+            ContractVesselTracker.OnVesselAssociation.Remove(OnVesselAssociation);
+            ContractVesselTracker.OnVesselDisassociation.Remove(OnVesselDisassociation);
 
             // Leave to catch late events
             if (state != ParameterState.Complete)
             {
-                GameEvents.Contract.onCompleted.Remove(new EventData<Contract>.OnEvent(OnContractCompleted));
-                GameEvents.Contract.onFailed.Remove(new EventData<Contract>.OnEvent(OnContractFailed));
-                GameEvents.Contract.onCancelled.Remove(new EventData<Contract>.OnEvent(OnContractFailed));
+                GameEvents.Contract.onCompleted.Remove(OnContractCompleted);
+                GameEvents.Contract.onFailed.Remove(OnContractFailed);
+                GameEvents.Contract.onCancelled.Remove(OnContractFailed);
             }
 
-            ConfiguredContract.OnContractLoaded.Remove(new EventData<ConfiguredContract>.OnEvent(OnContractLoaded));
+            ConfiguredContract.OnContractLoaded.Remove(OnContractLoaded);
+            ContractVesselTracker.OnKeyedVesselDestroyed.Remove(OnKeyedVesselDestroyed);
 
             foreach (VesselWaypoint vesselWaypoint in vesselWaypoints)
             {
@@ -545,6 +554,27 @@ namespace ContractConfigurator.Parameters
                     // Manually run the OnParameterStateChange
                     OnParameterStateChange(this);
                 }
+            }
+        }
+
+        protected void OnKeyedVesselDestroyed(GameEvents.HostTargetAction<Vessel, string> hta)
+        {
+            string vesselKey = hta.target;
+            if (define == vesselKey)
+            {
+                foreach (ContractParameter param in this.GetAllDescendents())
+                {
+                    param.Enable();
+                    if (param is ContractConfiguratorParameter ccp)
+                        ccp.SetState(ParameterState.Incomplete);
+                    param.Enable();   // Just in case
+                    param.Reset();
+                }
+
+                Enable();
+                SetState(ParameterState.Incomplete);
+                Enable();   // Ugh, don't ask why
+                Reset();
             }
         }
 
