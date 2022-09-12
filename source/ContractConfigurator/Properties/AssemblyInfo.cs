@@ -1,9 +1,4 @@
-﻿#if DEBUG
-#define ENABLE_PROFILER
-#define DEVELOPMENT
-#endif
-
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -39,6 +34,11 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0")]
+#if CIBUILD
+[assembly: AssemblyFileVersion("@MAJOR@.@MINOR@.@PATCH.@BUILD@")]
+[assembly: AssemblyFileVersion("@MAJOR@.@MINOR@.@PATCH@.@BUILD@")]
+#else
 [assembly: AssemblyFileVersion("2.1.4")]
+#endif
 [assembly: AssemblyInformationalVersion("2.1.4 KSP-RO")]
 [assembly: KSPAssembly("ContractConfigurator", 2, 1)]
