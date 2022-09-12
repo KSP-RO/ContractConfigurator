@@ -16,9 +16,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\GameData\ContractConfigurator\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -38,10 +38,12 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(KspInstallationDir)\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="RemoteTech, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(KspInstallationDir)\RemoteTech\Plugins\RemoteTech.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -51,9 +53,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
       <HintPath>$(KspInstallationDir)\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(KspInstallationDir)\KSP_x64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -78,21 +82,12 @@
     <ProjectReference Include="..\ContractConfigurator\ContractConfigurator.csproj">
       <Project>{4082b9bc-243e-456d-a9c5-705f4428eb36}</Project>
       <Name>ContractConfigurator</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="BeforeBuild">
-    <Error Condition="!Exists('$(SolutionDir)\ksplocations.props')" Text="You need to copy ksplocations_example.props to ksplocations.props and edit it with paths to a couple things on your machine" />
-  </Target>
   <PropertyGroup>
     <PostBuildEvent>
-        if $(ConfigurationName) == Debug (
-          "$(Pdb2MdbExe)" "$(TargetPath)"
-        )
-        
-        copy /y "$(TargetPath)" "$(SolutionDir)..\GameData\ContractConfigurator\"
-        copy /Y "$(TargetDir)$(TargetName).pdb" "$(KspInstallationDir)\GameData\ContractConfigurator\"
-        if exist "$(TargetDir)$(TargetName).dll.mdb" (copy /Y "$(TargetDir)$(TargetName).dll.mdb" "$(KspInstallationDir)\GameData\ContractConfigurator\")
     </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

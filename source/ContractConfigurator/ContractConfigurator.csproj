@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\GameData\ContractConfigurator\</OutputPath>
     <DefineConstants>TRACE;DEBUG;ENABLE_PROFILER</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -378,13 +378,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /y "$(TargetPath)" "$(SolutionDir)..\GameData\ContractConfigurator\"
-if exist "$(KspInstallationDir)" (
-copy /Y "$(TargetPath)" "$(KspInstallationDir)\GameData\ContractConfigurator\"
-copy /Y "$(TargetDir)$(TargetName).pdb" "$(KspInstallationDir)\GameData\ContractConfigurator\"
-  if exist "$(TargetDir)$(TargetName).pdb" (copy /Y "$(TargetDir)$(TargetName).pdb" "$(KspInstallationDir)\GameData\ContractConfigurator\")
-)
-</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
