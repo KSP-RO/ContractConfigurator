@@ -35,7 +35,6 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0")]
 #if CIBUILD
-[assembly: AssemblyFileVersion("@MAJOR@.@MINOR@.@PATCH.@BUILD@")]
 [assembly: AssemblyFileVersion("@MAJOR@.@MINOR@.@PATCH@.@BUILD@")]
 #else
 [assembly: AssemblyFileVersion("2.1.4")]
