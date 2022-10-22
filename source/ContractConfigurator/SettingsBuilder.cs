@@ -41,6 +41,10 @@ namespace ContractConfigurator
         public bool DisplayOfferedWaypoints = ContractDefs.DisplayOfferedWaypoints;
         public bool DisplayActiveWaypoints = true;
 
+        [GameParameters.CustomFloatParameterUI("#cc.settings.contractMultiplier.name", displayFormat = "F2", minValue = 0.2f, maxValue = 8.0f, stepCount = 40,
+            toolTip = "#cc.settings.contractMultiplier.desc")]
+        public float ActiveContractMultiplier = 1.0f;
+
         public enum MissionControlButton
         {
             All,

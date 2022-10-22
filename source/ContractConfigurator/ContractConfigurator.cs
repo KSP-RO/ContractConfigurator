@@ -555,7 +555,7 @@ namespace ContractConfigurator
             int level = (int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.MissionControl) *
                 ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.MissionControl));
             float rep = Reputation.Instance.reputation;
-            float mult = 1f;
+            float mult = HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().ActiveContractMultiplier; ;
             switch (prestige)
             {
                 case Contract.ContractPrestige.Trivial:
