@@ -503,22 +503,26 @@ namespace ContractConfigurator.Parameters
             int count = GetCount(values, dest);
             LoggingUtil.LogVerbose(this, "Count = {0}", count);
             bool countConditionMet = (count >= minCount && count <= maxCount);
+
+            ParameterState newState;
+            if (countConditionMet)
+            {
+                newState = ParameterState.Complete;
+            }
+            // Something before us failed, so we're uncertain
+            else if (!conditionMet && ignorePreviousFailures)
+            {
+                newState = ParameterState.Incomplete;
+            }
+            else
+            {
+                newState = ParameterState.Failed;
+                conditionMet = false;
+            }
+
             if (!checkOnly)
             {
-                if (countConditionMet)
-                {
-                    SetState(ParameterState.Complete);
-                }
-                // Something before us failed, so we're uncertain
-                else if (!conditionMet && ignorePreviousFailures)
-                {
-                    SetState(ParameterState.Incomplete);
-                }
-                else
-                {
-                    SetState(ParameterState.Failed);
-                    conditionMet = false;
-                }
+                SetState(newState);
             }
         }
     }
