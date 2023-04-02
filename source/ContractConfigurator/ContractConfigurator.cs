@@ -54,12 +54,16 @@ namespace ContractConfigurator
 
             OnParameterChange.Add(ParameterChange);
             GameEvents.OnTechnologyResearched.Add(OnTechResearched);
+            GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
+            GameEvents.onLevelWasLoaded.Add(OnLevelWasLoaded);
         }
 
         void OnDestroy()
         {
             OnParameterChange.Remove(ParameterChange);
             GameEvents.OnTechnologyResearched.Remove(OnTechResearched);
+            GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
+            GameEvents.onLevelWasLoaded.Remove(OnLevelWasLoaded);
         }
 
         void PSystemReady()
@@ -548,6 +552,16 @@ namespace ContractConfigurator
                     ResearchAndDevelopment.RemoveExperimentalPart(p);
                 }
             }
+        }
+
+        private void OnGameSceneLoadRequested(GameScenes requestedScene)
+        {
+            ConfiguredContract.ClearStaticState();
+        }
+
+        private void OnLevelWasLoaded(GameScenes data)
+        {
+            ConfiguredContract.ClearStaticState();    // Clear state again in case something accessed the static properties after OnGameSceneLoadRequested
         }
 
         public static int ContractLimit(Contract.ContractPrestige prestige)

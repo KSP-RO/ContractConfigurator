@@ -910,7 +910,7 @@ namespace ContractConfigurator
                     : (contract.ContractState != Contract.State.Active &&
                         !((ContractGroupParametersTemplate)HighLogic.CurrentGame.Parameters.CustomParams(SettingsBuilder.GroupParametersType)).IsEnabled(group.Root.name)))
                 {
-                    throw new ContractRequirementException("Contract group " + group.name + " is not enabled.");
+                    throw new ContractRequirementException($"Contract group {group.name} is not enabled.");
                 }
 
                 if (group.maxSimultaneous != 0 || group.maxCompletions != 0)
@@ -922,16 +922,16 @@ namespace ContractConfigurator
                     int activeContracts = contractList.Count(c => c.contractType != null && group.BelongsToGroup(c.contractType));
                     if (group.maxSimultaneous != 0 && activeContracts >= group.maxSimultaneous)
                     {
-                        throw new ContractRequirementException("Too many active contracts in group (" + group.name + ").");
+                        throw new ContractRequirementException($"Too many active contracts in group ({group.name}).");
                     }
 
                     // Check the group completed limit
                     if (group.maxCompletions != 0)
                     {
-                        int finishedContracts = ConfiguredContract.CompletedContracts.Count(c => c.contractType != null && group.BelongsToGroup(c.contractType));
+                        int finishedContracts = ConfiguredContract.CompletedContractsByGroup.TryGetValue(group.name, out var list) ? list.Count : 0;
                         if (finishedContracts + activeContracts >= maxCompletions)
                         {
-                            throw new ContractRequirementException("Too many completed contracts in group (" + group.name + ").");
+                            throw new ContractRequirementException($"Too many completed contracts in group ({group.name}).");
                         }
                     }
                 }
@@ -976,15 +976,7 @@ namespace ContractConfigurator
 
         public int ActualCompletions()
         {
-            int count = 0;
-            foreach (ConfiguredContract c in ConfiguredContract.CompletedContracts)
-            {
-                if (c.contractType != null && c.contractType.name == name)
-                {
-                    count++;
-                }
-            }
-            return count;
+            return ConfiguredContract.CompletedContractsByName.TryGetValue(name, out List<ConfiguredContract> list) ? list.Count : 0;
         }
 
         /// <summary>

@@ -1414,16 +1414,11 @@ namespace ContractConfigurator.Util
                 title = cc.contractType.genericTitle;
 
                 // Special case for one-off contracts
-                if (cc.contractType.maxCompletions == 1)
+                if (cc.contractType.maxCompletions == 1 &&
+                    ConfiguredContract.CompletedContractsByName.TryGetValue(cc.contractType.name, out List<ConfiguredContract> list) &&
+                    list.Count > 0)
                 {
-                    foreach (ConfiguredContract c in ConfiguredContract.CompletedContracts)
-                    {
-                        if (c.contractType != null && c.contractType.name == cc.contractType.name)
-                        {
-                            title = c.Title;
-                            break;
-                        }
-                    }
+                    title = list[0].Title;
                 }
             }
 
@@ -1503,16 +1498,11 @@ namespace ContractConfigurator.Util
         {
             // Special case for one-off contracts
             string description = contractType.genericDescription;
-            if (contractType.maxCompletions == 1)
+            if (contractType.maxCompletions == 1 &&
+                ConfiguredContract.CompletedContractsByName.TryGetValue(contractType.name, out List<ConfiguredContract> list) &&
+                list.Count > 0)
             {
-                foreach (ConfiguredContract c in ConfiguredContract.CompletedContracts)
-                {
-                    if (c.contractType != null && c.contractType.name == contractType.name)
-                    {
-                        description = c.Description;
-                        break;
-                    }
-                }
+                description = list[0].Description;
             }
 
             string text = StringBuilderCache.Format("<b><color=#DB8310>{0}</color></b>\n\n<color=#CCCCCC>{1}</color>\n\n<b><color=#DB8310>{2}</color></b>\n\n",

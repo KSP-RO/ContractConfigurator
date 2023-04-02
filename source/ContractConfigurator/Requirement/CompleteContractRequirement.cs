@@ -56,22 +56,18 @@ namespace ContractConfigurator
             // Finished contracts - Contract Configurator style
             if (tag != null)
             {
-                IEnumerable<ConfiguredContract> completedContract = ConfiguredContract.CompletedContracts.
-                    Where(c => c.contractType != null && c.contractType.tag.Equals(tag));
-                finished = completedContract.Count();
+                finished = ConfiguredContract.CompletedContractsByTag.TryGetValue(tag, out List<ConfiguredContract> list) ? list.Count : 0;
                 if (finished > 0 && cooldownDuration.Value > 0.0)
                 {
-                    lastFinished = completedContract.OrderByDescending<ConfiguredContract, double>(c => c.DateFinished).First().DateFinished;
+                    lastFinished = list.OrderByDescending<ConfiguredContract, double>(c => c.DateFinished).First().DateFinished;
                 }
             }
             else if (ccType != null)
             {
-                IEnumerable<ConfiguredContract> completedContract = ConfiguredContract.CompletedContracts.
-                    Where(c => c.contractType != null && c.contractType.name.Equals(ccType));
-                finished = completedContract.Count();
+                finished = ConfiguredContract.CompletedContractsByName.TryGetValue(ccType, out List<ConfiguredContract> list) ? list.Count : 0;
                 if (finished > 0 && cooldownDuration.Value > 0.0)
                 {
-                    lastFinished = completedContract.OrderByDescending<ConfiguredContract, double>(c => c.DateFinished).First().DateFinished;
+                    lastFinished = list.OrderByDescending<ConfiguredContract, double>(c => c.DateFinished).First().DateFinished;
                 }
             }
             // Finished contracts - stock style

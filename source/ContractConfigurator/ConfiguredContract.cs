@@ -1,16 +1,12 @@
 ﻿using System;
-using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using UnityEngine;
-using KSP;
-using KSPAchievements;
 using Contracts;
 using Contracts.Agents;
 using ContractConfigurator.Parameters;
+using System.Runtime.CompilerServices;
 
 namespace ContractConfigurator
 {
@@ -178,6 +174,71 @@ namespace ContractConfigurator
                     return Enumerable.Empty<ConfiguredContract>();
                 }
                 return ContractSystem.Instance.ContractsFinished.Where(c => c.ContractState == Contract.State.Completed).OfType<ConfiguredContract>();
+            }
+        }
+
+        private static Dictionary<string, List<ConfiguredContract>> _completedContractsByName;
+        public static Dictionary<string, List<ConfiguredContract>> CompletedContractsByName
+        {
+            get
+            {
+                if (!CheckContractSysLoaded())
+                    return new Dictionary<string, List<ConfiguredContract>>(0);
+                if (_completedContractsByName == null)
+                {
+
+                    _completedContractsByName = ContractSystem.Instance.ContractsFinished
+                        .Where(c => c.ContractState == Contract.State.Completed)
+                        .OfType<ConfiguredContract>()
+                        .Where(c => c.contractType?.name != null)
+                        .GroupBy(c => c.contractType.name)
+                        .ToDictionary(g => g.Key, g => g.ToList());
+                }
+                return _completedContractsByName;
+            }
+        }
+
+        private static Dictionary<string, List<ConfiguredContract>> _completedContractsByTag;
+        public static Dictionary<string, List<ConfiguredContract>> CompletedContractsByTag
+        {
+            get
+            {
+                if (!CheckContractSysLoaded())
+                    return new Dictionary<string, List<ConfiguredContract>>(0);
+                if (_completedContractsByTag == null)
+                {
+                    _completedContractsByTag = ContractSystem.Instance.ContractsFinished
+                        .Where(c => c.ContractState == Contract.State.Completed)
+                        .OfType<ConfiguredContract>()
+                        .Where(c => !string.IsNullOrEmpty(c.contractType?.tag))
+                        .GroupBy(c => c.contractType.tag)
+                        .ToDictionary(g => g.Key, g => g.ToList());
+                }
+                return _completedContractsByTag;
+            }
+        }
+
+        private static Dictionary<string, List<ConfiguredContract>> _completedContractsByGroup;
+        public static Dictionary<string, List<ConfiguredContract>> CompletedContractsByGroup
+        {
+            get
+            {
+                if (!CheckContractSysLoaded())
+                    return new Dictionary<string, List<ConfiguredContract>>(0);
+                if (_completedContractsByGroup == null)
+                {
+                    var coll = ContractSystem.Instance.ContractsFinished
+                        .Where(c => c.ContractState == Contract.State.Completed)
+                        .OfType<ConfiguredContract>()
+                        .Where(c => c.contractType?.group != null);
+
+                    _completedContractsByGroup = new Dictionary<string, List<ConfiguredContract>>();
+                    foreach (ConfiguredContract cc in coll)
+                    {
+                        AddToGroupDictionary(cc, _completedContractsByGroup);
+                    }
+                }
+                return _completedContractsByGroup;
             }
         }
 
@@ -656,10 +717,14 @@ namespace ContractConfigurator
         protected override void OnCompleted()
         {
             base.OnCompleted();
-            
+
             // Stock seems to have issues with setting this correctly.
             // TODO - check post-0.25 to see if this is still necessary as a workaround
             dateFinished = Planetarium.GetUniversalTime();
+
+            AddToDictionary(contractType?.name, CompletedContractsByName);
+            AddToDictionary(contractType?.tag, CompletedContractsByTag);
+            AddToGroupDictionary(this, CompletedContractsByGroup);
 
             foreach (ContractBehaviour behaviour in behaviours)
             {
@@ -862,6 +927,55 @@ namespace ContractConfigurator
                 {
                     yield return name;
                 }
+            }
+        }
+
+        internal static void ClearStaticState()
+        {
+            _completedContractsByName = null;
+            _completedContractsByTag = null;
+            _completedContractsByGroup = null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool CheckContractSysLoaded()
+        {
+            if (!ContractSystem.loaded)
+            {
+                LoggingUtil.LogError(typeof(ConfiguredContract), "Tried to access contract system before it was loaded. At: {0}", Environment.StackTrace);
+            }
+            return ContractSystem.loaded;
+        }
+
+        private void AddToDictionary(string key, Dictionary<string, List<ConfiguredContract>> dict)
+        {
+            if (!string.IsNullOrEmpty(key))
+            {
+                if (!dict.TryGetValue(key, out List<ConfiguredContract> list))
+                {
+                    list = new List<ConfiguredContract>();
+                    dict.Add(key, list);
+                }
+                list.Add(this);
+            }
+        }
+
+        private static void AddToGroupDictionary(ConfiguredContract cc, Dictionary<string, List<ConfiguredContract>> dict)
+        {
+            ContractGroup group = cc.contractType?.group;
+            while (group != null)
+            {
+                if (!string.IsNullOrEmpty(group.name))
+                {
+                    if (!dict.TryGetValue(group.name, out List<ConfiguredContract> list))
+                    {
+                        list = new List<ConfiguredContract>();
+                        dict.Add(group.name, list);
+                    }
+                    list.Add(cc);
+                }
+
+                group = group.parent;
             }
         }
     }
