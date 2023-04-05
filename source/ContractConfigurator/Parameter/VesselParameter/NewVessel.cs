@@ -46,13 +46,13 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccepted));
+            GameEvents.Contract.onAccepted.Add(OnContractAccepted);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccepted));
+            GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
         }
 
         protected void OnContractAccepted(Contract c)

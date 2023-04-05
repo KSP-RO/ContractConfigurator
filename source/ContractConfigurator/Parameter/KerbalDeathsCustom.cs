@@ -84,23 +84,23 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onCrewKilled.Add(new EventData<EventReport>.OnEvent(OnCrewKilled));
-            GameEvents.onVesselChange.Add(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onVesselCreate.Add(new EventData<Vessel>.OnEvent(OnVesselCreate));
-            ContractVesselTracker.OnVesselAssociation.Add(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselAssociation));
-            ContractVesselTracker.OnVesselDisassociation.Add(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselDisassociation));
-            GameEvents.Contract.onParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.onCrewKilled.Add(OnCrewKilled);
+            GameEvents.onVesselChange.Add(OnVesselChange);
+            GameEvents.onVesselCreate.Add(OnVesselCreate);
+            ContractVesselTracker.OnVesselAssociation.Add(OnVesselAssociation);
+            ContractVesselTracker.OnVesselDisassociation.Add(OnVesselDisassociation);
+            GameEvents.Contract.onParameterChange.Add(OnParameterChange);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onCrewKilled.Remove(new EventData<EventReport>.OnEvent(OnCrewKilled));
-            GameEvents.onVesselChange.Remove(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onVesselCreate.Remove(new EventData<Vessel>.OnEvent(OnVesselCreate));
-            ContractVesselTracker.OnVesselAssociation.Remove(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselAssociation));
-            ContractVesselTracker.OnVesselDisassociation.Remove(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselDisassociation));
-            GameEvents.Contract.onParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.onCrewKilled.Remove(OnCrewKilled);
+            GameEvents.onVesselChange.Remove(OnVesselChange);
+            GameEvents.onVesselCreate.Remove(OnVesselCreate);
+            ContractVesselTracker.OnVesselAssociation.Remove(OnVesselAssociation);
+            ContractVesselTracker.OnVesselDisassociation.Remove(OnVesselDisassociation);
+            GameEvents.Contract.onParameterChange.Remove(OnParameterChange);
         }
 
         protected override void OnParameterSave(ConfigNode node)

@@ -58,15 +58,15 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(OnVesselWasModified));
-            GameEvents.onVesselRename.Add(new EventData<GameEvents.HostedFromToAction<Vessel,string>>.OnEvent(OnVesselRename));
+            GameEvents.onVesselWasModified.Add(OnVesselWasModified);
+            GameEvents.onVesselRename.Add(OnVesselRename);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselWasModified.Remove(new EventData<Vessel>.OnEvent(OnVesselWasModified));
-            GameEvents.onVesselRename.Remove(new EventData<GameEvents.HostedFromToAction<Vessel, string>>.OnEvent(OnVesselRename));
+            GameEvents.onVesselWasModified.Remove(OnVesselWasModified);
+            GameEvents.onVesselRename.Remove(OnVesselRename);
         }
 
         protected override void OnFlightReady()

@@ -50,16 +50,16 @@ namespace ContractConfigurator
 
         public void Start()
         {
-            GameEvents.onPartJointBreak.Add(new EventData<PartJoint, float>.OnEvent(OnPartJointBreak));
-            GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(OnVesselWasModified));
-            GameEvents.onVesselDestroy.Add(new EventData<Vessel>.OnEvent(OnVesselDestroy));
+            GameEvents.onPartJointBreak.Add(OnPartJointBreak);
+            GameEvents.onVesselWasModified.Add(OnVesselWasModified);
+            GameEvents.onVesselDestroy.Add(OnVesselDestroy);
         }
 
         public void OnDestroy()
         {
-            GameEvents.onPartJointBreak.Remove(new EventData<PartJoint, float>.OnEvent(OnPartJointBreak));
-            GameEvents.onVesselWasModified.Remove(new EventData<Vessel>.OnEvent(OnVesselWasModified));
-            GameEvents.onVesselDestroy.Remove(new EventData<Vessel>.OnEvent(OnVesselDestroy));
+            GameEvents.onPartJointBreak.Remove(OnPartJointBreak);
+            GameEvents.onVesselWasModified.Remove(OnVesselWasModified);
+            GameEvents.onVesselDestroy.Remove(OnVesselDestroy);
         }
 
         public override void OnLoad(ConfigNode node)

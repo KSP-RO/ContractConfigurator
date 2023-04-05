@@ -148,17 +148,17 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onCrewTransferred.Add(new EventData<GameEvents.HostedFromToAction<ProtoCrewMember, Part>>.OnEvent(OnCrewTransferred));
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccepted));
-            SpawnPassengers.onPassengersLoaded.Add(new EventVoid.OnEvent(OnPassengersLoaded));
+            GameEvents.onCrewTransferred.Add(OnCrewTransferred);
+            GameEvents.Contract.onAccepted.Add(OnContractAccepted);
+            SpawnPassengers.onPassengersLoaded.Add(OnPassengersLoaded);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onCrewTransferred.Remove(new EventData<GameEvents.HostedFromToAction<ProtoCrewMember, Part>>.OnEvent(OnCrewTransferred));
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccepted));
-            SpawnPassengers.onPassengersLoaded.Remove(new EventVoid.OnEvent(OnPassengersLoaded));
+            GameEvents.onCrewTransferred.Remove(OnCrewTransferred);
+            GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
+            SpawnPassengers.onPassengersLoaded.Remove(OnPassengersLoaded);
         }
 
         protected void OnContractAccepted(Contract contract)

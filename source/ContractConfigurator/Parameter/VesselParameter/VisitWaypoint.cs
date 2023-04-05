@@ -27,12 +27,12 @@ namespace ContractConfigurator.Parameters
             public WaypointChecker(VisitWaypoint vw)
             {
                 visitWaypoint = vw;
-                ContractConfigurator.OnParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+                ContractConfigurator.OnParameterChange.Add(OnParameterChange);
             }
 
             public void UnbindFromEvents()
             {
-                ContractConfigurator.OnParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+                ContractConfigurator.OnParameterChange.Remove(OnParameterChange);
             }
 
             protected void OnParameterChange(Contract c, ContractParameter p)

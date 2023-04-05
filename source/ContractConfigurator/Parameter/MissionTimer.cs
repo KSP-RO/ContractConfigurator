@@ -23,12 +23,12 @@ namespace ContractConfigurator.Parameters
             {
                 this.missionTimer = missionTimer;
 
-                GameEvents.Contract.onCompleted.Add(new EventData<Contract>.OnEvent(OnContractCompleted));
+                GameEvents.Contract.onCompleted.Add(OnContractCompleted);
             }
 
             public void UnbindFromEvents()
             {
-                GameEvents.Contract.onCompleted.Remove(new EventData<Contract>.OnEvent(OnContractCompleted));
+                GameEvents.Contract.onCompleted.Remove(OnContractCompleted);
             }
 
             protected void OnContractCompleted(Contract contract)
@@ -131,20 +131,20 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccepted));
-            GameEvents.onLaunch.Add(new EventData<EventReport>.OnEvent(OnLaunch));
-            GameEvents.Contract.onParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
-            ContractConfigurator.OnParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.Contract.onAccepted.Add(OnContractAccepted);
+            GameEvents.onLaunch.Add(OnLaunch);
+            GameEvents.Contract.onParameterChange.Add(OnParameterChange);
+            ContractConfigurator.OnParameterChange.Add(OnParameterChange);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
             checker?.UnbindFromEvents();
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccepted));
-            GameEvents.onLaunch.Remove(new EventData<EventReport>.OnEvent(OnLaunch));
-            GameEvents.Contract.onParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
-            ContractConfigurator.OnParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
+            GameEvents.onLaunch.Remove(OnLaunch);
+            GameEvents.Contract.onParameterChange.Remove(OnParameterChange);
+            ContractConfigurator.OnParameterChange.Remove(OnParameterChange);
         }
 
         protected void OnContractAccepted(Contract contract)

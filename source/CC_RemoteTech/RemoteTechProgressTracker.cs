@@ -189,12 +189,12 @@ namespace ContractConfigurator.RemoteTech
 
         public void Start()
         {
-            RemoteTechAssistant.OnRemoteTechUpdate.Add(new EventData<VesselSatellite>.OnEvent(OnRemoteTechUpdate));
+            RemoteTechAssistant.OnRemoteTechUpdate.Add(OnRemoteTechUpdate);
         }
 
         public void OnDestroy()
         {
-            RemoteTechAssistant.OnRemoteTechUpdate.Remove(new EventData<VesselSatellite>.OnEvent(OnRemoteTechUpdate));
+            RemoteTechAssistant.OnRemoteTechUpdate.Remove(OnRemoteTechUpdate);
         }
 
         void FixedUpdate()

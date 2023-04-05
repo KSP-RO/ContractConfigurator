@@ -89,15 +89,15 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselWillDestroy.Add(new EventData<Vessel>.OnEvent(OnVesselWillDestroy));
-            GameEvents.onPartDie.Add(new EventData<Part>.OnEvent(OnPartDie));
+            GameEvents.onVesselWillDestroy.Add(OnVesselWillDestroy);
+            GameEvents.onPartDie.Add(OnPartDie);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselWillDestroy.Remove(new EventData<Vessel>.OnEvent(OnVesselWillDestroy));
-            GameEvents.onPartDie.Remove(new EventData<Part>.OnEvent(OnPartDie));
+            GameEvents.onVesselWillDestroy.Remove(OnVesselWillDestroy);
+            GameEvents.onPartDie.Remove(OnPartDie);
         }
 
         protected override void OnVesselChange(Vessel vessel)

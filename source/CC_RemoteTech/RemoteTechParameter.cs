@@ -20,13 +20,13 @@ namespace ContractConfigurator.RemoteTech
         protected override void OnRegister()
         {
             base.OnRegister();
-            RemoteTechAssistant.OnRemoteTechUpdate.Add(new EventData<VesselSatellite>.OnEvent(OnRemoteTechUpdate));
+            RemoteTechAssistant.OnRemoteTechUpdate.Add(OnRemoteTechUpdate);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            RemoteTechAssistant.OnRemoteTechUpdate.Remove(new EventData<VesselSatellite>.OnEvent(OnRemoteTechUpdate));
+            RemoteTechAssistant.OnRemoteTechUpdate.Remove(OnRemoteTechUpdate);
         }
 
         protected void OnRemoteTechUpdate(VesselSatellite s)

@@ -58,13 +58,13 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onStageSeparation.Add(new EventData<EventReport>.OnEvent(OnStageSeparation));
+            GameEvents.onStageSeparation.Add(OnStageSeparation);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onStageSeparation.Remove(new EventData<EventReport>.OnEvent(OnStageSeparation));
+            GameEvents.onStageSeparation.Remove(OnStageSeparation);
         }
 
         protected void OnStageSeparation(EventReport er)

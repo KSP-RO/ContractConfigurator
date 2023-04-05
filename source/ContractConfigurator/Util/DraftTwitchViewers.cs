@@ -69,18 +69,18 @@ namespace ContractConfigurator
                 return;
             }
 
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccepted));
-            ContractPreLoader.OnInitializeValues.Add(new EventVoid.OnEvent(OnPreLoaderInitializeValues));
-            ContractPreLoader.OnInitializeFail.Add(new EventVoid.OnEvent(OnPreLoaderInitializeFail));
+            GameEvents.Contract.onAccepted.Add(OnContractAccepted);
+            ContractPreLoader.OnInitializeValues.Add(OnPreLoaderInitializeValues);
+            ContractPreLoader.OnInitializeFail.Add(OnPreLoaderInitializeFail);
         }
 
         void OnDestroy()
         {
             Instance = null;
 
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccepted));
-            ContractPreLoader.OnInitializeValues.Remove(new EventVoid.OnEvent(OnPreLoaderInitializeValues));
-            ContractPreLoader.OnInitializeFail.Remove(new EventVoid.OnEvent(OnPreLoaderInitializeFail));
+            GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
+            ContractPreLoader.OnInitializeValues.Remove(OnPreLoaderInitializeValues);
+            ContractPreLoader.OnInitializeFail.Remove(OnPreLoaderInitializeFail);
         }
 
         void Update()

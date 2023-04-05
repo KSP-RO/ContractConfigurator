@@ -25,16 +25,16 @@ namespace ContractConfigurator.Behaviour
         {
             base.OnRegister();
 
-            GameEvents.onVesselChange.Add(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onFlightReady.Add(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onVesselChange.Add(OnVesselChange);
+            GameEvents.onFlightReady.Add(OnFlightReady);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
 
-            GameEvents.onVesselChange.Remove(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onFlightReady.Remove(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onVesselChange.Remove(OnVesselChange);
+            GameEvents.onFlightReady.Remove(OnFlightReady);
         }
 
         private void OnFlightReady()

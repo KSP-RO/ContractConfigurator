@@ -48,8 +48,8 @@ namespace ContractConfigurator.Behaviour
 
             protected void Start()
             {
-                GameEvents.onHideUI.Add(new EventVoid.OnEvent(OnHideUI));
-                GameEvents.onShowUI.Add(new EventVoid.OnEvent(OnShowUI));
+                GameEvents.onHideUI.Add(OnHideUI);
+                GameEvents.onShowUI.Add(OnShowUI);
             }
 
             protected void OnDestroy()
@@ -233,14 +233,14 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnRegister()
         {
-            GameEvents.onVesselRecovered.Add(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
-            GameEvents.onFlightReady.Add(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onVesselRecovered.Add(OnVesselRecovered);
+            GameEvents.onFlightReady.Add(OnFlightReady);
         }
 
         protected override void OnUnregister()
         {
-            GameEvents.onVesselRecovered.Remove(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
-            GameEvents.onFlightReady.Remove(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
+            GameEvents.onFlightReady.Remove(OnFlightReady);
         }
 
         protected void OnFlightReady()

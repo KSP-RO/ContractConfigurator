@@ -380,16 +380,16 @@ namespace ContractConfigurator.Parameters
         {
             base.OnRegister();
 
-            GameEvents.OnExperimentDeployed.Add(new EventData<ScienceData>.OnEvent(OnExperimentDeployed));
-            GameEvents.OnScienceRecieved.Add(new EventData<float, ScienceSubject, ProtoVessel, bool>.OnEvent(OnScienceReceived));
+            GameEvents.OnExperimentDeployed.Add(OnExperimentDeployed);
+            GameEvents.OnScienceRecieved.Add(OnScienceReceived);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
 
-            GameEvents.OnExperimentDeployed.Remove(new EventData<ScienceData>.OnEvent(OnExperimentDeployed));
-            GameEvents.OnScienceRecieved.Remove(new EventData<float, ScienceSubject, ProtoVessel, bool>.OnEvent(OnScienceReceived));
+            GameEvents.OnExperimentDeployed.Remove(OnExperimentDeployed);
+            GameEvents.OnScienceRecieved.Remove(OnScienceReceived);
         }
 
         protected void OnExperimentDeployed(ScienceData scienceData)

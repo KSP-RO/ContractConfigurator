@@ -112,8 +112,8 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselWillDestroy.Add(new EventData<Vessel>.OnEvent(OnVesselWillDestroy));
-            GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(OnVesselWasModified));
+            GameEvents.onVesselWillDestroy.Add(OnVesselWillDestroy);
+            GameEvents.onVesselWasModified.Add(OnVesselWasModified);
 
             // Add a waypoint for each possible vessel in the list
             foreach (string vesselKey in vessels)
@@ -127,8 +127,8 @@ namespace ContractConfigurator.Parameters
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselWillDestroy.Remove(new EventData<Vessel>.OnEvent(OnVesselWillDestroy));
-            GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(OnVesselWasModified));
+            GameEvents.onVesselWillDestroy.Remove(OnVesselWillDestroy);
+            GameEvents.onVesselWasModified.Add(OnVesselWasModified);
 
             foreach (VesselWaypoint vesselWaypoint in vesselWaypoints)
             {

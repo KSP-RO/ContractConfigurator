@@ -271,13 +271,13 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselWasModified.Add(new EventData<Vessel>.OnEvent(OnVesselWasModified));
+            GameEvents.onVesselWasModified.Add(OnVesselWasModified);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselWasModified.Remove(new EventData<Vessel>.OnEvent(OnVesselWasModified));
+            GameEvents.onVesselWasModified.Remove(OnVesselWasModified);
         }
 
         protected void OnVesselWasModified(Vessel v)

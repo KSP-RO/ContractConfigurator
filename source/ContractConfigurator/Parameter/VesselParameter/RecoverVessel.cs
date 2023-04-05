@@ -43,13 +43,13 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselRecovered.Add(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
+            GameEvents.onVesselRecovered.Add(OnVesselRecovered);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselRecovered.Remove(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
+            GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
         }
 
         private void OnVesselRecovered(ProtoVessel v, bool quick)

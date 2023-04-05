@@ -53,15 +53,15 @@ namespace ContractConfigurator.Behaviour
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.Contract.onParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
-            ContractConfigurator.OnParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.Contract.onParameterChange.Add(OnParameterChange);
+            ContractConfigurator.OnParameterChange.Add(OnParameterChange);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.Contract.onParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
-            ContractConfigurator.OnParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.Contract.onParameterChange.Remove(OnParameterChange);
+            ContractConfigurator.OnParameterChange.Remove(OnParameterChange);
         }
         
         protected override void OnAccepted()

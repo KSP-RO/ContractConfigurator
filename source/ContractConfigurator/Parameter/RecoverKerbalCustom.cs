@@ -127,23 +127,23 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselCreate.Add(new EventData<Vessel>.OnEvent(OnVesselCreate));
-            GameEvents.onCrewTransferred.Add(new EventData<GameEvents.HostedFromToAction<ProtoCrewMember, Part>>.OnEvent(OnCrewTransferred));
-            GameEvents.onVesselRecovered.Add(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
-            GameEvents.onCrewKilled.Add(new EventData<EventReport>.OnEvent(OnCrewKilled));
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccepted));
-            ContractConfigurator.OnParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.onVesselCreate.Add(OnVesselCreate);
+            GameEvents.onCrewTransferred.Add(OnCrewTransferred);
+            GameEvents.onVesselRecovered.Add(OnVesselRecovered);
+            GameEvents.onCrewKilled.Add(OnCrewKilled);
+            GameEvents.Contract.onAccepted.Add(OnContractAccepted);
+            ContractConfigurator.OnParameterChange.Add(OnParameterChange);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselCreate.Remove(new EventData<Vessel>.OnEvent(OnVesselCreate));
-            GameEvents.onCrewTransferred.Remove(new EventData<GameEvents.HostedFromToAction<ProtoCrewMember, Part>>.OnEvent(OnCrewTransferred));
-            GameEvents.onVesselRecovered.Remove(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
-            GameEvents.onCrewKilled.Remove(new EventData<EventReport>.OnEvent(OnCrewKilled));
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccepted));
-            ContractConfigurator.OnParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterChange));
+            GameEvents.onVesselCreate.Remove(OnVesselCreate);
+            GameEvents.onCrewTransferred.Remove(OnCrewTransferred);
+            GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
+            GameEvents.onCrewKilled.Remove(OnCrewKilled);
+            GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
+            ContractConfigurator.OnParameterChange.Remove(OnParameterChange);
         }
 
         private void OnVesselCreate(Vessel v)

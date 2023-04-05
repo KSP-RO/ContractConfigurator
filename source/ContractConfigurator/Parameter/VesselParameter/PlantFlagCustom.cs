@@ -59,13 +59,13 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onFlagPlant.Add(new EventData<Vessel>.OnEvent(OnPlantFlag));
+            GameEvents.onFlagPlant.Add(OnPlantFlag);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onFlagPlant.Remove(new EventData<Vessel>.OnEvent(OnPlantFlag));
+            GameEvents.onFlagPlant.Remove(OnPlantFlag);
         }
 
         protected void OnPlantFlag(Vessel v)

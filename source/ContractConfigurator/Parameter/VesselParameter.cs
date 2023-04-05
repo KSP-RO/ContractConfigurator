@@ -292,25 +292,25 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onFlightReady.Add(new EventVoid.OnEvent(OnFlightReady));
-            GameEvents.onVesselCreate.Add(new EventData<Vessel>.OnEvent(OnVesselCreate));
-            GameEvents.onVesselChange.Add(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onPartJointBreak.Add(new EventData<PartJoint, float>.OnEvent(OnPartJointBreak));
-            GameEvents.onPartAttach.Add(new EventData<GameEvents.HostTargetAction<Part, Part>>.OnEvent(OnPartAttach));
-            GameEvents.onCrewTransferred.Add(new EventData<GameEvents.HostedFromToAction<ProtoCrewMember, Part>>.OnEvent(OnCrewTransferred));
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccepted));
+            GameEvents.onFlightReady.Add(OnFlightReady);
+            GameEvents.onVesselCreate.Add(OnVesselCreate);
+            GameEvents.onVesselChange.Add(OnVesselChange);
+            GameEvents.onPartJointBreak.Add(OnPartJointBreak);
+            GameEvents.onPartAttach.Add(OnPartAttach);
+            GameEvents.onCrewTransferred.Add(OnCrewTransferred);
+            GameEvents.Contract.onAccepted.Add(OnContractAccepted);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onFlightReady.Remove(new EventVoid.OnEvent(OnFlightReady));
-            GameEvents.onVesselCreate.Remove(new EventData<Vessel>.OnEvent(OnVesselCreate));
-            GameEvents.onVesselChange.Remove(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onPartJointBreak.Remove(new EventData<PartJoint, float>.OnEvent(OnPartJointBreak));
-            GameEvents.onPartAttach.Remove(new EventData<GameEvents.HostTargetAction<Part, Part>>.OnEvent(OnPartAttach));
-            GameEvents.onCrewTransferred.Remove(new EventData<GameEvents.HostedFromToAction<ProtoCrewMember, Part>>.OnEvent(OnCrewTransferred));
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccepted));
+            GameEvents.onFlightReady.Remove(OnFlightReady);
+            GameEvents.onVesselCreate.Remove(OnVesselCreate);
+            GameEvents.onVesselChange.Remove(OnVesselChange);
+            GameEvents.onPartJointBreak.Remove(OnPartJointBreak);
+            GameEvents.onPartAttach.Remove(OnPartAttach);
+            GameEvents.onCrewTransferred.Remove(OnCrewTransferred);
+            GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
         }
 
         protected virtual void OnCrewTransferred(GameEvents.HostedFromToAction<ProtoCrewMember, Part> a)

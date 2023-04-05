@@ -830,27 +830,27 @@ namespace ContractConfigurator
         protected override void OnRegister()
         {
             base.OnRegister();
-            ContractConfigurator.OnParameterChange.Add(new EventData<Contract, ContractParameter>.OnEvent(OnParameterStateChange));
+            ContractConfigurator.OnParameterChange.Add(OnParameterStateChange);
             foreach (ContractBehaviour behaviour in behaviours)
             {
                 behaviour.Register();
             }
 
-            GameEvents.onVesselChange.Add(new EventData<Vessel>.OnEvent(OnVesselChange));
-            OnStateChange.Add(new EventData<State>.OnEvent(SelfStateChanged));
+            GameEvents.onVesselChange.Add(OnVesselChange);
+            OnStateChange.Add(SelfStateChanged);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            ContractConfigurator.OnParameterChange.Remove(new EventData<Contract, ContractParameter>.OnEvent(OnParameterStateChange));
+            ContractConfigurator.OnParameterChange.Remove(OnParameterStateChange);
             foreach (ContractBehaviour behaviour in behaviours)
             {
                 behaviour.Unregister();
             }
 
-            GameEvents.onVesselChange.Remove(new EventData<Vessel>.OnEvent(OnVesselChange));
-            OnStateChange.Remove(new EventData<State>.OnEvent(SelfStateChanged));
+            GameEvents.onVesselChange.Remove(OnVesselChange);
+            OnStateChange.Remove(SelfStateChanged);
         }
 
         protected override void OnUpdate()

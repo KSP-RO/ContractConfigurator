@@ -44,22 +44,22 @@ namespace ContractConfigurator
 
         void Start()
         {
-            GameEvents.Contract.onOffered.Add(new EventData<Contract>.OnEvent(OnContractOffered));
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccept));
-            GameEvents.Contract.onFinished.Add(new EventData<Contract>.OnEvent(OnContractFinish));
-            GameEvents.Contract.onDeclined.Add(new EventData<Contract>.OnEvent(OnContractDecline));
-            GameEvents.Contract.onContractsLoaded.Add(new EventVoid.OnEvent(OnContractsLoaded));
-            GameEvents.OnProgressReached.Add(new EventData<ProgressNode>.OnEvent(OnProgressReached));
+            GameEvents.Contract.onOffered.Add(OnContractOffered);
+            GameEvents.Contract.onAccepted.Add(OnContractAccept);
+            GameEvents.Contract.onFinished.Add(OnContractFinish);
+            GameEvents.Contract.onDeclined.Add(OnContractDecline);
+            GameEvents.Contract.onContractsLoaded.Add(OnContractsLoaded);
+            GameEvents.OnProgressReached.Add(OnProgressReached);
         }
 
         void OnDestroy()
         {
-            GameEvents.Contract.onOffered.Remove(new EventData<Contract>.OnEvent(OnContractOffered));
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccept));
-            GameEvents.Contract.onFinished.Remove(new EventData<Contract>.OnEvent(OnContractFinish));
-            GameEvents.Contract.onDeclined.Remove(new EventData<Contract>.OnEvent(OnContractDecline));
-            GameEvents.Contract.onContractsLoaded.Remove(new EventVoid.OnEvent(OnContractsLoaded));
-            GameEvents.OnProgressReached.Remove(new EventData<ProgressNode>.OnEvent(OnProgressReached));
+            GameEvents.Contract.onOffered.Remove(OnContractOffered);
+            GameEvents.Contract.onAccepted.Remove(OnContractAccept);
+            GameEvents.Contract.onFinished.Remove(OnContractFinish);
+            GameEvents.Contract.onDeclined.Remove(OnContractDecline);
+            GameEvents.Contract.onContractsLoaded.Remove(OnContractsLoaded);
+            GameEvents.OnProgressReached.Remove(OnProgressReached);
 
             // Unregister anything from offered contracts
             foreach (ConfiguredContract contract in contracts)

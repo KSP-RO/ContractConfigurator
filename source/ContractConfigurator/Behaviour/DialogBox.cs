@@ -824,12 +824,12 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnRegister()
         {
-            GameEvents.onFlightReady.Add(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onFlightReady.Add(OnFlightReady);
         }
 
         protected override void OnUnregister()
         {
-            GameEvents.onFlightReady.Remove(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onFlightReady.Remove(OnFlightReady);
         }
 
         protected void OnFlightReady()

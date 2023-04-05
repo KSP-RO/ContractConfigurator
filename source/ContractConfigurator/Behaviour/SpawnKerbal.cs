@@ -392,12 +392,12 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnRegister()
         {
-            GameEvents.onVesselRecovered.Add(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
+            GameEvents.onVesselRecovered.Add(OnVesselRecovered);
         }
 
         protected override void OnUnregister()
         {
-            GameEvents.onVesselRecovered.Remove(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
+            GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
         }
 
         private void OnVesselRecovered(ProtoVessel v, bool quick)

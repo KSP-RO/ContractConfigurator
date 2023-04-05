@@ -723,14 +723,14 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnRegister()
         {
-            GameEvents.onVesselRecovered.Add(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
-            GameEvents.onGameSceneLoadRequested.Add(new EventData<GameScenes>.OnEvent(OnGameSceneLoad));
+            GameEvents.onVesselRecovered.Add(OnVesselRecovered);
+            GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoad);
         }
 
         protected override void OnUnregister()
         {
-            GameEvents.onVesselRecovered.Remove(new EventData<ProtoVessel, bool>.OnEvent(OnVesselRecovered));
-            GameEvents.onGameSceneLoadRequested.Remove(new EventData<GameScenes>.OnEvent(OnGameSceneLoad));
+            GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
+            GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoad);
         }
 
         private void OnVesselRecovered(ProtoVessel v, bool quick)

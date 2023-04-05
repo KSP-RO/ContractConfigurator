@@ -45,12 +45,12 @@ namespace ContractConfigurator.CutScene
 
         public void Start()
         {
-            GameEvents.onGameSceneSwitchRequested.Add(new EventData<GameEvents.FromToAction<GameScenes, GameScenes>>.OnEvent(GameSceneSwitch));
+            GameEvents.onGameSceneSwitchRequested.Add(GameSceneSwitch);
         }
 
         public void OnDestroy()
         {
-            GameEvents.onGameSceneSwitchRequested.Remove(new EventData<GameEvents.FromToAction<GameScenes, GameScenes>>.OnEvent(GameSceneSwitch));
+            GameEvents.onGameSceneSwitchRequested.Remove(GameSceneSwitch);
             if (state != State.IDLE)
             {
                 EnableInputs();

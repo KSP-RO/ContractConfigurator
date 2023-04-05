@@ -322,9 +322,9 @@ namespace ContractConfigurator.Util
                 ticks = 0;
 
                 // Disable GameEvent handlers
-                GameEvents.Contract.onOffered.Remove(new EventData<Contract>.OnEvent(OnContractOffered));
-                GameEvents.Contract.onDeclined.Remove(new EventData<Contract>.OnEvent(OnContractDeclined));
-                GameEvents.Contract.onFinished.Remove(new EventData<Contract>.OnEvent(OnContractFinished));
+                GameEvents.Contract.onOffered.Remove(OnContractOffered);
+                GameEvents.Contract.onDeclined.Remove(OnContractDeclined);
+                GameEvents.Contract.onFinished.Remove(OnContractFinished);
 
                 return;
             }
@@ -405,9 +405,9 @@ namespace ContractConfigurator.Util
                 GameEvents.Contract.onContractsListChanged = new EventVoid("onContractsListChanged");
 
                 // Contract state change handlers
-                GameEvents.Contract.onOffered.Add(new EventData<Contract>.OnEvent(OnContractOffered));
-                GameEvents.Contract.onDeclined.Add(new EventData<Contract>.OnEvent(OnContractDeclined));
-                GameEvents.Contract.onFinished.Add(new EventData<Contract>.OnEvent(OnContractFinished));
+                GameEvents.Contract.onOffered.Add(OnContractOffered);
+                GameEvents.Contract.onDeclined.Add(OnContractDeclined);
+                GameEvents.Contract.onFinished.Add(OnContractFinished);
             }
 
             if (ticks == 1 || ticks == 2)

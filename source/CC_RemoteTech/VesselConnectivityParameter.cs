@@ -67,15 +67,15 @@ namespace ContractConfigurator.RemoteTech
         protected override void OnRegister()
         {
             base.OnRegister();
-            ContractVesselTracker.OnVesselAssociation.Add(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselAssociation));
-            ContractVesselTracker.OnVesselDisassociation.Add(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselDisassociation));
+            ContractVesselTracker.OnVesselAssociation.Add(OnVesselAssociation);
+            ContractVesselTracker.OnVesselDisassociation.Add(OnVesselDisassociation);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            ContractVesselTracker.OnVesselAssociation.Remove(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselAssociation));
-            ContractVesselTracker.OnVesselDisassociation.Remove(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselDisassociation));
+            ContractVesselTracker.OnVesselAssociation.Remove(OnVesselAssociation);
+            ContractVesselTracker.OnVesselDisassociation.Remove(OnVesselDisassociation);
         }
 
         protected void OnVesselAssociation(GameEvents.HostTargetAction<Vessel, string> hta)

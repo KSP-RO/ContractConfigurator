@@ -96,7 +96,7 @@ namespace ContractConfigurator.Behaviour
 
         public WaypointGenerator()
         {
-            GameEvents.OnMapViewFiltersModified.Add(new EventData<MapViewFiltering.VesselTypeFilter>.OnEvent(OnMapViewFiltersModified));
+            GameEvents.OnMapViewFiltersModified.Add(OnMapViewFiltersModified);
         }
 
         /// <summary>
@@ -512,14 +512,14 @@ namespace ContractConfigurator.Behaviour
         {
             base.OnRegister();
 
-            GameEvents.onFlightReady.Add(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onFlightReady.Add(OnFlightReady);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
 
-            GameEvents.onFlightReady.Remove(new EventVoid.OnEvent(OnFlightReady));
+            GameEvents.onFlightReady.Remove(OnFlightReady);
 
             foreach (WaypointData wpData in waypoints)
             {

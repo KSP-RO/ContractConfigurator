@@ -156,18 +156,18 @@ namespace ContractConfigurator.Parameters
         {
             base.OnRegister();
 
-            GameEvents.onVesselChange.Add(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onKerbalStatusChange.Add(new EventData<ProtoCrewMember, ProtoCrewMember.RosterStatus, ProtoCrewMember.RosterStatus>.OnEvent(OnKerbalStatusChange));
-            GameEvents.Contract.onAccepted.Add(new EventData<Contract>.OnEvent(OnContractAccepted));
+            GameEvents.onVesselChange.Add(OnVesselChange);
+            GameEvents.onKerbalStatusChange.Add(OnKerbalStatusChange);
+            GameEvents.Contract.onAccepted.Add(OnContractAccepted);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
 
-            GameEvents.onVesselChange.Remove(new EventData<Vessel>.OnEvent(OnVesselChange));
-            GameEvents.onKerbalStatusChange.Remove(new EventData<ProtoCrewMember, ProtoCrewMember.RosterStatus, ProtoCrewMember.RosterStatus>.OnEvent(OnKerbalStatusChange));
-            GameEvents.Contract.onAccepted.Remove(new EventData<Contract>.OnEvent(OnContractAccepted));
+            GameEvents.onVesselChange.Remove(OnVesselChange);
+            GameEvents.onKerbalStatusChange.Remove(OnKerbalStatusChange);
+            GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
         }
 
         protected void OnVesselChange(Vessel v)

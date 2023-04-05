@@ -412,7 +412,7 @@ namespace ContractConfigurator.Parameters
                 }
 
                 // Register these early, otherwise we'll miss the event
-                ConfiguredContract.OnContractLoaded.Add(new EventData<ConfiguredContract>.OnEvent(OnContractLoaded));
+                ConfiguredContract.OnContractLoaded.Add(OnContractLoaded);
                 if (resetChildrenWhenVesselDestroyed && Root.ContractState == Contract.State.Active)
                 {
                     ContractVesselTracker.OnKeyedVesselDestroyed.Add(OnKeyedVesselDestroyed);
@@ -430,13 +430,13 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselChange.Add(new EventData<Vessel>.OnEvent(OnVesselChange));
-            ContractVesselTracker.OnVesselAssociation.Add(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselAssociation));
-            ContractVesselTracker.OnVesselDisassociation.Add(new EventData<GameEvents.HostTargetAction<Vessel, string>>.OnEvent(OnVesselDisassociation));
+            GameEvents.onVesselChange.Add(OnVesselChange);
+            ContractVesselTracker.OnVesselAssociation.Add(OnVesselAssociation);
+            ContractVesselTracker.OnVesselDisassociation.Add(OnVesselDisassociation);
 
-            GameEvents.Contract.onCompleted.Add(new EventData<Contract>.OnEvent(OnContractCompleted));
-            GameEvents.Contract.onFailed.Add(new EventData<Contract>.OnEvent(OnContractFailed));
-            GameEvents.Contract.onCancelled.Add(new EventData<Contract>.OnEvent(OnContractFailed));
+            GameEvents.Contract.onCompleted.Add(OnContractCompleted);
+            GameEvents.Contract.onFailed.Add(OnContractFailed);
+            GameEvents.Contract.onCancelled.Add(OnContractFailed);
 
             // Add a waypoint for each possible vessel in the list
             foreach (string vesselKey in vesselList)

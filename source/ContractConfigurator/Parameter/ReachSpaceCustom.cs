@@ -50,13 +50,13 @@ namespace ContractConfigurator.Parameters
         protected override void OnRegister()
         {
             base.OnRegister();
-            GameEvents.onVesselSituationChange.Add(new EventData<GameEvents.HostedFromToAction<Vessel,Vessel.Situations>>.OnEvent(OnVesselSituationChange));
+            GameEvents.onVesselSituationChange.Add(OnVesselSituationChange);
         }
 
         protected override void OnUnregister()
         {
             base.OnUnregister();
-            GameEvents.onVesselSituationChange.Remove(new EventData<GameEvents.HostedFromToAction<Vessel, Vessel.Situations>>.OnEvent(OnVesselSituationChange));
+            GameEvents.onVesselSituationChange.Remove(OnVesselSituationChange);
         }
 
         protected void OnVesselSituationChange(GameEvents.HostedFromToAction<Vessel, Vessel.Situations> hfta)
