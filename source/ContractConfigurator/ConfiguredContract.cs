@@ -555,6 +555,14 @@ namespace ContractConfigurator
                 }
 
                 OnContractLoaded.Fire(this);
+
+                foreach (ContractParameter param in this.GetAllDescendents())
+                {
+                    if (param is ContractConfiguratorParameter ccParam)
+                    {
+                        ccParam.OnContractLoad(this);
+                    }
+                }
             }
             catch (Exception e)
             {
