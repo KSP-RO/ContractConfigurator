@@ -282,6 +282,15 @@ namespace ContractConfigurator.Parameters
         }
 
         /// <summary>
+        /// Use if some logic needs to run between contract OnLoad and OnRegister.
+        /// A typical use case is dynamically creating additional parameters.
+        /// </summary>
+        /// <param name="configuredContract"></param>
+        public virtual void OnContractLoad(ConfiguredContract configuredContract)
+        {
+        }
+
+        /// <summary>
         /// Replacement for stock AllChildParametersComplete which considers child parameters.
         /// </summary>
         /// <returns>Whether all non-optional parameters are complete.</returns>

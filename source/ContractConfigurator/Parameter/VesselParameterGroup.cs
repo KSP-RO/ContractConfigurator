@@ -135,12 +135,9 @@ namespace ContractConfigurator.Parameters
             return base.GetNotes();
         }
 
-        protected void OnContractLoaded(ConfiguredContract contract)
+        public override void OnContractLoad(ConfiguredContract configuredContract)
         {
-            if (contract == Root)
-            {
-                CreateTimerParameter();
-            }
+            CreateTimerParameter();
         }
 
         protected void CreateTimerParameter()
@@ -412,7 +409,6 @@ namespace ContractConfigurator.Parameters
                 }
 
                 // Register these early, otherwise we'll miss the event
-                ConfiguredContract.OnContractLoaded.Add(OnContractLoaded);
                 if (resetChildrenWhenVesselDestroyed && Root.ContractState == Contract.State.Active)
                 {
                     ContractVesselTracker.OnKeyedVesselDestroyed.Add(OnKeyedVesselDestroyed);
@@ -462,7 +458,6 @@ namespace ContractConfigurator.Parameters
                 GameEvents.Contract.onCancelled.Remove(OnContractFailed);
             }
 
-            ConfiguredContract.OnContractLoaded.Remove(OnContractLoaded);
             ContractVesselTracker.OnKeyedVesselDestroyed.Remove(OnKeyedVesselDestroyed);
 
             foreach (VesselWaypoint vesselWaypoint in vesselWaypoints)
