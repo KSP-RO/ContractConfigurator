@@ -81,6 +81,7 @@ namespace ContractConfigurator.Parameters
             disableOnStateChange = false;
         }
 
+        // The following two overrides of OnRegister() and OnUnregister() were created to help debugging the memory leak of ParameterDelegate while asserting proper callback registration.
         protected override void OnParameterSave(ConfigNode node)
         {
         }
