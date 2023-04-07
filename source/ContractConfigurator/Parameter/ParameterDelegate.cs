@@ -82,6 +82,19 @@ namespace ContractConfigurator.Parameters
         }
 
         // The following two overrides of OnRegister() and OnUnregister() were created to help debugging the memory leak of ParameterDelegate while asserting proper callback registration.
+        // They can be removed but doen't hurt to stay here either.
+        protected override void OnRegister()
+        {
+            this.titleTracker.RegisterToEvents();
+            LoggingUtil.LogDebug(this, $"Registering ParameterDelegate: {this.GetHashString()}");
+        }
+
+        protected override void OnUnregister()
+        {
+            this.titleTracker.UnregisterFromEvents();
+            LoggingUtil.LogDebug(this, $"Unregistering ParameterDelegate: {this.GetHashString()}");
+        }
+
         protected override void OnParameterSave(ConfigNode node)
         {
         }
