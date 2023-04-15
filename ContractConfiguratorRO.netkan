@@ -28,7 +28,8 @@
     "install" : [
         {
             "file"       : "GameData/ContractConfigurator",
-            "install_to" : "GameData"
+            "install_to" : "GameData",
+            "filter"     : "0Harmony.dll"
         }
     ]
 }
