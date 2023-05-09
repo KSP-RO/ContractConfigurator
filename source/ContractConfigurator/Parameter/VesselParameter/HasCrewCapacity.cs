@@ -93,9 +93,15 @@ namespace ContractConfigurator.Parameters
             CheckVessel(FlightGlobals.ActiveVessel);
         }
 
-        protected override void OnPartJointBreak(PartJoint p, float breakForce)
+        protected override void OnPartUndock(Part part)
         {
-            base.OnPartJointBreak(p, breakForce);
+            base.OnPartUndock(part);
+            CheckVessel(FlightGlobals.ActiveVessel);
+        }
+
+        protected override void OnPartDeCouple(Part part)
+        {
+            base.OnPartDeCouple(part);
             CheckVessel(FlightGlobals.ActiveVessel);
         }
 

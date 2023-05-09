@@ -85,42 +85,36 @@ namespace ContractConfigurator.Parameters
             }
         }
 
-        protected override void OnPartJointBreak(PartJoint pj, float breakForce)
+        protected override void OnPartUndock(Part part)
         {
-            LoggingUtil.LogVerbose(this, "OnPartJointBreak");
-
-            // Special docking port handling, because they don't fire an event if cross-feed is enabled
-            // (the OnUndock event is only good is cross-feed is off)
-            int dockingPortCount = 0;
-            for (int i = 0; i < 2; i++)
+            if (HighLogic.LoadedScene == GameScenes.EDITOR || part?.vessel == null)
             {
-                Part p = i == 0 ? pj.Parent : pj.Child;
-                foreach (PartModule pm in p.Modules)
-                {
-                    if (pm.moduleName.StartsWith("ModuleDocking"))
-                    {
-                        dockingPortCount++;
-                        break;
-                    }
-                }
+                return;
             }
 
-            // This is a confirmation, add the first vessel id to staged
-            if (dockingPortCount == 2)
+            LoggingUtil.LogVerbose(this, "OnPartUndock");
+
+            staged.Add(part.vessel);
+            lastUndockTime = UnityEngine.Time.fixedTime;
+
+            base.OnPartUndock(part);
+        }
+
+        protected override void OnPartDeCouple(Part part)
+        {
+            if (HighLogic.LoadedScene == GameScenes.EDITOR || part?.vessel == null)
             {
-                staged.Add(pj.Parent.vessel);
-                lastUndockTime = UnityEngine.Time.fixedTime;
+                return;
             }
-            // Need to check for a stage seperation
-            else
-            {
-                possibleStages.Clear();
-                possibleStages.Add(pj.Parent.vessel);
-                lastPartJointTime = UnityEngine.Time.fixedTime;
-            }
+
+            LoggingUtil.LogVerbose(this, "OnPartDeCouple");
+
+            possibleStages.Clear();
+            possibleStages.Add(part.vessel);
+            lastPartJointTime = UnityEngine.Time.fixedTime;
 
             // Vessel check happens here
-            base.OnPartJointBreak(pj, breakForce);
+            base.OnPartDeCouple(part);
         }
 
         protected override void OnVesselCreate(Vessel v)

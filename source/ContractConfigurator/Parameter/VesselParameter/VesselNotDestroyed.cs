@@ -107,17 +107,27 @@ namespace ContractConfigurator.Parameters
             lastVesselChange = Time.fixedTime;
         }
 
-        protected override void OnPartJointBreak(PartJoint p, float breakForce)
+        protected override void OnPartUndock(Part part)
         {
-            base.OnPartJointBreak(p, breakForce);
+            base.OnPartUndock(part);
+            CheckAboutToCreateVesselFromPart(part);
+        }
 
-            if (HighLogic.LoadedScene == GameScenes.EDITOR || p?.Parent?.vessel == null)
+        protected override void OnPartDeCouple(Part part)
+        {
+            base.OnPartDeCouple(part);
+            CheckAboutToCreateVesselFromPart(part);
+        }
+
+        private void CheckAboutToCreateVesselFromPart(Part part)
+        {
+            if (HighLogic.LoadedScene == GameScenes.EDITOR || part?.vessel == null)
             {
                 return;
             }
 
-            Vessel v = p.Parent.vessel;
-            LoggingUtil.LogVerbose(this, "OnPartJointBreak: {0}", v.id);
+            Vessel v = part.vessel;
+            LoggingUtil.LogVerbose(this, "CheckAboutToCreateVesselFromPart: {0}", v.id);
             if (v.vesselType == VesselType.Debris)
             {
                 return;

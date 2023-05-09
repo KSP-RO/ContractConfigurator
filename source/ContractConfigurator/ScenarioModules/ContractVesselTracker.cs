@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.Remoting;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Profiling;
 using KSP;
 using Contracts;
 
@@ -50,14 +51,16 @@ namespace ContractConfigurator
 
         public void Start()
         {
-            GameEvents.onPartJointBreak.Add(OnPartJointBreak);
+            GameEvents.onPartDeCouple.Add(OnPartDeCoupleOrUndock);
+            GameEvents.onPartUndock.Add(OnPartDeCoupleOrUndock);
             GameEvents.onVesselWasModified.Add(OnVesselWasModified);
             GameEvents.onVesselDestroy.Add(OnVesselDestroy);
         }
 
         public void OnDestroy()
         {
-            GameEvents.onPartJointBreak.Remove(OnPartJointBreak);
+            GameEvents.onPartDeCouple.Remove(OnPartDeCoupleOrUndock);
+            GameEvents.onPartUndock.Remove(OnPartDeCoupleOrUndock);
             GameEvents.onVesselWasModified.Remove(OnVesselWasModified);
             GameEvents.onVesselDestroy.Remove(OnVesselDestroy);
         }
@@ -169,25 +172,26 @@ namespace ContractConfigurator
             }
         }
 
-        protected virtual void OnPartJointBreak(PartJoint p, float breakForce)
+        protected virtual void OnPartDeCoupleOrUndock(Part p)
         {
-            LoggingUtil.LogVerbose(this, "OnPartJointBreak: {0}", p.Parent.vessel.id);
+            LoggingUtil.LogVerbose(this, "OnPartDeCoupleOrUndock: {0}", p.vessel.id);
             if (HighLogic.LoadedScene == GameScenes.EDITOR)
             {
                 return;
             }
 
-            if (GetAssociatedKeys(p.Parent.vessel).Any())
+            Profiler.BeginSample("CC-CVT-OnPartDeCoupleOrUndock");
+            if (GetAssociatedKeys(p.vessel).Any())
             {
-                lastBreak = p.Parent.vessel;
+                lastBreak = p.vessel;
             }
             vesselModifiedCallCount = 0;
+            Profiler.EndSample();
         }
 
         protected virtual void OnVesselWasModified(Vessel vessel)
         {
             LoggingUtil.LogDebug(this, "OnVesselWasModified: {0}", vessel.id);
-            vessel.GetHashes().Count();
 
             // Check for a vessel creation after a part joint break
             if (HighLogic.LoadedScene != GameScenes.FLIGHT || lastBreak == null || vessel == lastBreak)
@@ -195,6 +199,8 @@ namespace ContractConfigurator
                 LoggingUtil.LogVerbose(this, "    returning, wrong scene or wrong vessel...");
                 return;
             }
+
+            Profiler.BeginSample("CC-CVT-OnVesselWasModified");
 
             IEnumerable<uint> otherVesselHashes = lastBreak.GetHashes();
             IEnumerable<uint> vesselHashes = vessel.GetHashes();
@@ -206,6 +212,7 @@ namespace ContractConfigurator
                 LoggingUtil.LogVerbose(this, "    first call check");
                 // The second call will be for the original vessel.  Swap over to check that one.
                 lastBreak = vessel;
+                Profiler.EndSample();
                 return;
             }
 
@@ -238,6 +245,7 @@ namespace ContractConfigurator
             }
 
             lastBreak = null;
+            Profiler.EndSample();
         }
 
         protected virtual void OnVesselDestroy(Vessel vessel)
@@ -250,6 +258,7 @@ namespace ContractConfigurator
                 return;
             }
 
+            Profiler.BeginSample("CC-CVT-OnVesselDestroy");
             // Try to change any associations over if this is due to a docking event
             foreach (string key in GetAssociatedKeys(vessel).ToList())
             {
@@ -286,6 +295,7 @@ namespace ContractConfigurator
                     OnKeyedVesselDestroyed.Fire(new GameEvents.HostTargetAction<Vessel, string>(vessel, key));
                 }
             }
+            Profiler.EndSample();
         }
 
         /// <summary>

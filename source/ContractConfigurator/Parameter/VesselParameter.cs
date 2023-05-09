@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Profiling;
 using KSP;
 using Contracts;
 using Contracts.Parameters;
@@ -295,6 +296,8 @@ namespace ContractConfigurator.Parameters
             GameEvents.onFlightReady.Add(OnFlightReady);
             GameEvents.onVesselCreate.Add(OnVesselCreate);
             GameEvents.onVesselChange.Add(OnVesselChange);
+            GameEvents.onPartDeCouple.Add(OnPartDeCouple);
+            GameEvents.onPartUndock.Add(OnPartUndock);
             GameEvents.onPartJointBreak.Add(OnPartJointBreak);
             GameEvents.onPartAttach.Add(OnPartAttach);
             GameEvents.onCrewTransferred.Add(OnCrewTransferred);
@@ -307,6 +310,8 @@ namespace ContractConfigurator.Parameters
             GameEvents.onFlightReady.Remove(OnFlightReady);
             GameEvents.onVesselCreate.Remove(OnVesselCreate);
             GameEvents.onVesselChange.Remove(OnVesselChange);
+            GameEvents.onPartDeCouple.Remove(OnPartDeCouple);
+            GameEvents.onPartUndock.Remove(OnPartUndock);
             GameEvents.onPartJointBreak.Remove(OnPartJointBreak);
             GameEvents.onPartAttach.Remove(OnPartAttach);
             GameEvents.onCrewTransferred.Remove(OnCrewTransferred);
@@ -443,39 +448,38 @@ namespace ContractConfigurator.Parameters
             CheckVessel(vessel);
         }
 
-        protected virtual void OnPartJointBreak(PartJoint p, float breakForce)
+        protected virtual void OnPartDeCouple(Part part)
         {
-            if (HighLogic.LoadedScene == GameScenes.EDITOR || p?.Parent?.vessel == null)
+            if (HighLogic.LoadedScene == GameScenes.EDITOR || part?.vessel == null)
             {
                 return;
             }
 
-            LoggingUtil.LogVerbose(this, "OnPartJointBreak({0})", p.Parent.vessel.id);
+            Profiler.BeginSample("CC-VP-OnPartDeCouple");
+            LoggingUtil.LogVerbose(this, "OnPartDeCouple({0})", part.vessel.id);
 
-            // Check if we need to make modifications based on undocking
-            if (vesselInfo.ContainsKey(p.Parent.vessel.id) && vesselInfo[p.Parent.vessel.id].state == ParameterState.Complete)
+            CheckVesselInfoModifications(part);
+            CheckVessel(part.vessel);
+            Profiler.EndSample();
+        }
+
+        protected virtual void OnPartUndock(Part part)
+        {
+            if (HighLogic.LoadedScene == GameScenes.EDITOR || part?.vessel == null)
             {
-                ParamStrength strength = vesselInfo[p.Parent.vessel.id].strength;
-
-                // Medium strengths indicates that we may need to lower to weak if the "strong"
-                // part is lost
-                if (strength == ParamStrength.MEDIUM)
-                {
-                    foreach (uint hash in p.Parent.vessel.GetHashes())
-                    {
-                        strength = !dockedVesselInfo.ContainsKey(hash) ? ParamStrength.WEAK : dockedVesselInfo[hash].Key > strength ? dockedVesselInfo[hash].Key : strength;
-                    }
-
-                    vesselInfo[p.Parent.vessel.id].strength = strength == ParamStrength.STRONG ? ParamStrength.MEDIUM : ParamStrength.WEAK;
-                }
-                else if (strength == ParamStrength.STRONG)
-                {
-                    // Save the sub vessel info
-                    SaveSubVesselInfo(p.Parent.vessel, ParamStrength.STRONG, vesselInfo[p.Parent.vessel.id].completionTime);
-                }
+                return;
             }
 
-            CheckVessel(p.Parent.vessel);
+            Profiler.BeginSample("CC-VP-OnPartUndock");
+            LoggingUtil.LogVerbose(this, "OnPartUndock({0})", part.vessel.id);
+
+            CheckVesselInfoModifications(part);
+            CheckVessel(part.vessel);
+            Profiler.EndSample();
+        }
+
+        protected virtual void OnPartJointBreak(PartJoint p, float breakForce)
+        {
         }
 
         protected virtual void OnPartAttach(GameEvents.HostTargetAction<Part, Part> e)
@@ -567,6 +571,32 @@ namespace ContractConfigurator.Parameters
             }
 
             CheckVessel(FlightGlobals.ActiveVessel);
+        }
+
+        private void CheckVesselInfoModifications(Part part)
+        {
+            // Check if we need to make modifications based on undocking
+            if (vesselInfo.ContainsKey(part.vessel.id) && vesselInfo[part.vessel.id].state == ParameterState.Complete)
+            {
+                ParamStrength strength = vesselInfo[part.vessel.id].strength;
+
+                // Medium strengths indicates that we may need to lower to weak if the "strong"
+                // part is lost
+                if (strength == ParamStrength.MEDIUM)
+                {
+                    foreach (uint hash in part.vessel.GetHashes())
+                    {
+                        strength = !dockedVesselInfo.ContainsKey(hash) ? ParamStrength.WEAK : dockedVesselInfo[hash].Key > strength ? dockedVesselInfo[hash].Key : strength;
+                    }
+
+                    vesselInfo[part.vessel.id].strength = strength == ParamStrength.STRONG ? ParamStrength.MEDIUM : ParamStrength.WEAK;
+                }
+                else if (strength == ParamStrength.STRONG)
+                {
+                    // Save the sub vessel info
+                    SaveSubVesselInfo(part.vessel, ParamStrength.STRONG, vesselInfo[part.vessel.id].completionTime);
+                }
+            }
         }
 
         /// <summary>

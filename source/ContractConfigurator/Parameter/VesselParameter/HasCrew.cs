@@ -313,19 +313,6 @@ namespace ContractConfigurator.Parameters
             CheckVessel(v);
         }
 
-        protected override void OnPartJointBreak(PartJoint p, float breakForce)
-        {
-            LoggingUtil.LogVerbose(this, "OnPartJointBreak: {0}", p);
-            base.OnPartJointBreak(p, breakForce);
-
-            if (HighLogic.LoadedScene == GameScenes.EDITOR || p.Parent.vessel == null)
-            {
-                return;
-            }
-
-            CheckVessel(p.Parent.vessel);
-        }
-
         protected override void OnCrewTransferred(GameEvents.HostedFromToAction<ProtoCrewMember, Part> a)
         {
             base.OnCrewTransferred(a);
