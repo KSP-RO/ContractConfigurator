@@ -231,23 +231,8 @@ namespace ContractConfigurator.Util
                 return ExperimentSituations.SrfLanded;
             }
 
-            Match m = Regex.Match(subject.id, @"@[A-Z][\w]+?([A-Z].*)");
-            string sitAndBiome = m.Groups[1].Value;
-
-            while (!string.IsNullOrEmpty(sitAndBiome))
-            {
-                try
-                {
-                    return (ExperimentSituations)Enum.Parse(typeof(ExperimentSituations), sitAndBiome, true);
-                }
-                catch
-                {
-                    m = Regex.Match(sitAndBiome, @"(.*)[A-Z][\w]*$");
-                    sitAndBiome = m.Groups[1].Value;
-                }
-            }
-
-            return ExperimentSituations.SrfLanded;
+            ScienceUtil.GetExperimentFieldsFromScienceID(subject.id, out _, out ExperimentSituations situation, out _);
+            return situation;   // Will default to SrfLanded if parsing failed
         }
 
         public static CelestialBody GetCelestialBody(ScienceSubject subject)
@@ -257,17 +242,7 @@ namespace ContractConfigurator.Util
                 return null;
             }
 
-            string celestialBody;
-            if (subject.id.StartsWith("ROCScience"))
-            {
-                Match m = Regex.Match(subject.id, @"ROCScience_([A-Z][\w]+?)([A-Z].*)");
-                celestialBody = m.Groups[1].Value;
-            }
-            else
-            {
-                Match m = Regex.Match(subject.id, @"@([A-Z][\w]+?)([A-Z].*)");
-                celestialBody = m.Groups[1].Value;
-            }
+            ScienceUtil.GetExperimentFieldsFromScienceID(subject.id, out string celestialBody, out string _, out _);
 
             return string.IsNullOrEmpty(celestialBody) ? null : ConfigNodeUtil.ParseCelestialBodyValue(celestialBody);
         }
@@ -279,29 +254,10 @@ namespace ContractConfigurator.Util
                 return null;
             }
 
-            Match m = Regex.Match(subject.id, @"@([A-Z][\w]+?)([A-Z].*)");
-            string celestialBody = m.Groups[1].Value;
-            string sitAndBiome = m.Groups[2].Value;
-
-            string biome = "";
-            while (!string.IsNullOrEmpty(sitAndBiome))
-            {
-                try
-                {
-                    Enum.Parse(typeof(ExperimentSituations), sitAndBiome, true);
-                    break;
-                }
-                catch
-                {
-                    m = Regex.Match(sitAndBiome, @"(.*)([A-Z][\w&]*)$$");
-                    sitAndBiome = m.Groups[1].Value;
-                    biome = m.Groups[2].Value + biome;
-                }
-            }
+            ScienceUtil.GetExperimentFieldsFromScienceID(subject.id, out string celestialBody, out string _, out string biome);
 
             return string.IsNullOrEmpty(biome) ? null : new Biome(ConfigNodeUtil.ParseCelestialBodyValue(celestialBody), biome);
         }
-
 
         public static float NextScienceReportValue(ScienceSubject subject)
         {
