@@ -16,8 +16,8 @@ namespace ContractConfigurator
     public class FacilityRequirement : ContractRequirement
     {
         protected SpaceCenterFacility facility;
-        protected int minLevel;
-        protected int maxLevel;
+        protected int? minLevel;
+        protected int? maxLevel;
 
         public override bool LoadFromConfig(ConfigNode configNode)
         {
@@ -28,8 +28,8 @@ namespace ContractConfigurator
             checkOnActiveContract = configNode.HasValue("checkOnActiveContract") ? checkOnActiveContract : true;
 
             valid &= ConfigNodeUtil.ParseValue<SpaceCenterFacility>(configNode, "facility", x => facility = x, this);
-            valid &= ConfigNodeUtil.ParseValue<int>(configNode, "minLevel", x => minLevel = x, this, 1, x => Validation.Between(x, 1, 3));
-            valid &= ConfigNodeUtil.ParseValue<int>(configNode, "maxLevel", x => maxLevel = x, this, 3, x => Validation.Between(x, 1, 3));
+            valid &= ConfigNodeUtil.ParseValue<int?>(configNode, "minLevel", x => minLevel = x, this, null, x => Validation.GE((int)x, 1));
+            valid &= ConfigNodeUtil.ParseValue<int?>(configNode, "maxLevel", x => maxLevel = x, this, null, x => Validation.GE((int)x, 1));
             valid &= ConfigNodeUtil.AtLeastOne(configNode, new string[] { "minLevel", "maxLevel" }, this);
 
             // Not invertable
@@ -41,15 +41,15 @@ namespace ContractConfigurator
         public override void OnSave(ConfigNode configNode)
         {
             configNode.AddValue("facility", facility);
-            configNode.AddValue("minLevel", minLevel);
-            configNode.AddValue("maxLevel", maxLevel);
+            if (minLevel.HasValue) configNode.AddValue("minLevel", minLevel);
+            if (maxLevel.HasValue) configNode.AddValue("maxLevel", maxLevel);
         }
 
         public override void OnLoad(ConfigNode configNode)
         {
             facility = ConfigNodeUtil.ParseValue<SpaceCenterFacility>(configNode, "facility");
-            minLevel = ConfigNodeUtil.ParseValue<int>(configNode, "minLevel");
-            maxLevel = ConfigNodeUtil.ParseValue<int>(configNode, "maxLevel");
+            if (configNode.HasValue("minLevel")) minLevel = ConfigNodeUtil.ParseValue<int>(configNode, "minLevel");
+            if (configNode.HasValue("maxLevel")) maxLevel = ConfigNodeUtil.ParseValue<int>(configNode, "maxLevel");
         }
 
         public override bool RequirementMet(ConfiguredContract contract)
@@ -62,7 +62,7 @@ namespace ContractConfigurator
 
             int level = (int)Math.Round(ScenarioUpgradeableFacilities.GetFacilityLevel(facility) *
                 ScenarioUpgradeableFacilities.GetFacilityLevelCount(facility)) + 1;
-            return level >= minLevel && level <= maxLevel;
+            return (!minLevel.HasValue || level >= minLevel) && (!maxLevel.HasValue || level <= maxLevel);
         }
 
         protected override string RequirementText()
