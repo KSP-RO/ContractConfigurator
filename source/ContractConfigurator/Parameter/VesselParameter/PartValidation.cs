@@ -136,7 +136,7 @@ namespace ContractConfigurator.Parameters
                     foreach (List<Tuple<string, string, string>> list in filter.partModuleExtended)
                     {
                         ContractParameter wrapperParam = AddParameter(new AllParameterDelegate<Part>(Localizer.Format("#cc.param.PartValidation.moduleShort", filter.type.Prefix()), filter.type));
-
+                        List<Tuple<string, string, string>> newTuples = new List<Tuple<string, string, string>>();
                         foreach (Tuple<string, string, string> v in list)
                         {
                             string name = v.Item1;
@@ -151,10 +151,27 @@ namespace ContractConfigurator.Parameters
                                 label = v.Item2;
                             }
                             string value = name == "name" ? ModuleName(v.Item3) : v.Item3;
-
-                            ParameterDelegateMatchType childFilter = ParameterDelegateMatchType.FILTER;
-                            wrapperParam.AddParameter(new ParameterDelegate<Part>(Localizer.Format("#cc.param.PartValidation.generic", childFilter.Prefix(), label, value), p => PartModuleCheck(p, v), childFilter));
+                            newTuples.Add(new Tuple<string, string, string>(name, label, value));
                         }
+
+                        ParameterDelegateMatchType childFilter = ParameterDelegateMatchType.FILTER;
+                        string loc;
+                        if (newTuples.Count == 1)
+                        {
+                            var t = newTuples[0];
+                            if (t.Item2.Length > 0 && t.Item2[0] == '¶')
+                                loc = Localizer.Format("#cc.param.PartValidation.generic.moduleRoot", childFilter.Prefix(), t.Item2.Substring(1));
+                            else
+                                loc = Localizer.Format("#cc.param.PartValidation.generic", childFilter.Prefix(), t.Item2, t.Item3);
+                        }
+                        else
+                        {
+                            List<string> subStrings = new List<string>();
+                            foreach (var v in newTuples)
+                                subStrings.Add(v.Item2.Length > 0 && v.Item2[0] == '¶' ? v.Item2.Substring(1) : Localizer.Format("#cc.param.PartValidation.generic.moduleSub", v.Item2, v.Item3));
+                            loc = Localizer.Format("#cc.param.PartValidation.generic.moduleRoot", childFilter.Prefix(), Localizer.Format($"<<and(1,{subStrings.Count})>>", subStrings.ToArray()));
+                        }
+                        AddParameter(new ParameterDelegate<Part>(loc, p => PartModuleCheck(p, newTuples), childFilter));
                     }
 
                     // Filter by category
@@ -204,7 +221,7 @@ namespace ContractConfigurator.Parameters
         public static string ModuleTypeName(string partModule)
         {
             // We don't have a reliable way to translate these, so we just do hardcoded mappings
-            switch(partModule)
+            switch (partModule)
             {
                 case "Antenna":
                     return Localizer.GetStringByTag("#autoLOC_234196");
@@ -240,29 +257,40 @@ namespace ContractConfigurator.Parameters
             return p.HasValidContractObjective(contractObjective);
         }
 
-        private bool PartModuleCheck(Part p, Tuple<string, string, string> v)
+        private bool PartModuleCheck(Part p, List<Tuple<string, string, string>> tuples)
         {
             foreach (PartModule pm in p.Modules)
             {
-                if (v.Item1 == "name")
+                bool match = true;
+                foreach (var v in tuples)
                 {
-                    if (pm.moduleName == v.Item3)
-                    {
-                        return true;
-                    }
+                    match &= ModuleCheck(pm, v);
                 }
-                else if (v.Item1 == "EngineType")
-                {
-                    ModuleEngines me = pm as ModuleEngines;
-                    return me != null && me.engineType.ToString() == v.Item3;
-                }
+                if (match)
+                    return true;
+            }
+            return false;
+        }
 
-                foreach (BaseField field in pm.Fields)
+        private static bool ModuleCheck(PartModule pm, Tuple<string, string, string> v)
+        {
+            if (v.Item1 == "name")
+                return pm.moduleName == v.Item3;
+
+            if (v.Item1 == "isEnabled")
+                return pm.isEnabled.ToString() == v.Item3;
+
+            if (v.Item1 == "EngineType")
+            {
+                ModuleEngines me = pm as ModuleEngines;
+                return me != null && me.engineType.ToString() == v.Item3;
+            }
+
+            foreach (BaseField field in pm.Fields)
+            {
+                if (field != null && field.name == v.Item1 && field.originalValue != null && field.originalValue.ToString() == v.Item3)
                 {
-                    if (field != null && field.name == v.Item1 && field.originalValue != null && field.originalValue.ToString() == v.Item3)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
             return false;
@@ -317,7 +345,10 @@ namespace ContractConfigurator.Parameters
                     {
                         if (!String.IsNullOrEmpty(v.Item2))
                         {
-                            moduleNode.AddValue("label", v.Item2);
+                            if (v.Item2[0] == '¶')
+                                moduleNode.AddValue("title", v.Item2.Substring(1));
+                            else
+                                moduleNode.AddValue("label", v.Item2);
                         }
                         moduleNode.AddValue(v.Item1, v.Item3);
                     }
@@ -376,6 +407,10 @@ namespace ContractConfigurator.Parameters
                             else if (v.name == "label")
                             {
                                 nextLabel = v.value;
+                            }
+                            else if (v.name == "title")
+                            {
+                                nextLabel = "¶" + v.value;
                             }
                             else
                             {

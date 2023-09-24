@@ -37,7 +37,7 @@ namespace ContractConfigurator
             }
 
             // Standard definition
-            if (configNode.HasValue("part") || configNode.HasValue("partModule") || configNode.HasValue("partModuleType") || configNode.HasValue("category") || configNode.HasValue("manufacturer"))
+            if (configNode.HasValue("part") || configNode.HasValue("partModule") || configNode.HasValue("partModuleType") || configNode.HasValue("category") || configNode.HasValue("manufacturer") || configNode.HasNode("MODULE"))
             {
                 PartValidation.Filter filter = new PartValidation.Filter(defaultMatch);
                 valid &= ConfigNodeUtil.ParseValue<List<AvailablePart>>(configNode, "part", x => filter.parts = x, this, new List<AvailablePart>());
@@ -60,6 +60,10 @@ namespace ContractConfigurator
                         else if (v.name == "label")
                         {
                             nextLabel = v.value;
+                        }
+                        else if (v.name == "title")
+                        {
+                            nextLabel = "¶" + v.value;
                         }
                         else
                         {
@@ -125,6 +129,10 @@ namespace ContractConfigurator
                         else if (v.name == "label")
                         {
                             nextLabel = v.value;
+                        }
+                        else if (v.name == "title")
+                        {
+                            nextLabel = "¶" + v.value;
                         }
                         else
                         {
