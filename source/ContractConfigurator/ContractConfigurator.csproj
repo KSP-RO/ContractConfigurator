@@ -139,6 +139,7 @@
     <Compile Include="Behaviour\UnlockPart.cs" />
     <Compile Include="Behaviour\UnlockTech.cs" />
     <Compile Include="HarmonyPatcher.cs" />
+    <Compile Include="Harmony\Kerbal.cs" />
     <Compile Include="Harmony\ContractSystem.cs" />
     <Compile Include="ScenarioModules\ScienceReporter.cs" />
     <Compile Include="ExpressionParser\Parsers\Classes\ExperienceTraitParser.cs" />

@@ -308,6 +308,7 @@ namespace ContractConfigurator.Parameters
             GameEvents.onCrewTransferred.Add(OnCrewTransferred);
             GameEvents.onVesselWasModified.Add(OnVesselWasModified);
             GameEvents.Contract.onAccepted.Add(OnContractAccepted);
+            ContractConfigurator.OnVesselCrewDie.Add(OnVesselCrewDie);
         }
 
         protected override void OnUnregister()
@@ -316,6 +317,7 @@ namespace ContractConfigurator.Parameters
             GameEvents.onCrewTransferred.Remove(OnCrewTransferred);
             GameEvents.onVesselWasModified.Remove(OnVesselWasModified);
             GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
+            ContractConfigurator.OnVesselCrewDie.Remove(OnVesselCrewDie);
         }
 
         private void OnContractAccepted(Contract c)
@@ -333,6 +335,11 @@ namespace ContractConfigurator.Parameters
                     kerbal.GenerateKerbal();
                 }
             }
+        }
+
+        private void OnVesselCrewDie(Vessel vessel, ProtoCrewMember pcm)
+        {
+            CheckVessel(vessel);
         }
 
         protected override void OnPartAttach(GameEvents.HostTargetAction<Part, Part> e)

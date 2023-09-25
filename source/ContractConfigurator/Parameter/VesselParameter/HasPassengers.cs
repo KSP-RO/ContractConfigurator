@@ -163,6 +163,7 @@ namespace ContractConfigurator.Parameters
             GameEvents.onCrewTransferred.Add(OnCrewTransferred);
             GameEvents.Contract.onAccepted.Add(OnContractAccepted);
             SpawnPassengers.onPassengersLoaded.Add(OnPassengersLoaded);
+            ContractConfigurator.OnVesselCrewDie.Add(OnVesselCrewDie);
         }
 
         protected override void OnUnregister()
@@ -171,6 +172,7 @@ namespace ContractConfigurator.Parameters
             GameEvents.onCrewTransferred.Remove(OnCrewTransferred);
             GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
             SpawnPassengers.onPassengersLoaded.Remove(OnPassengersLoaded);
+            ContractConfigurator.OnVesselCrewDie.Remove(OnVesselCrewDie);
         }
 
         protected void OnContractAccepted(Contract contract)
@@ -190,6 +192,11 @@ namespace ContractConfigurator.Parameters
         protected void OnPassengersLoaded()
         {
             CheckVessel(FlightGlobals.ActiveVessel);
+        }
+
+        protected void OnVesselCrewDie(Vessel vessel, ProtoCrewMember pcm)
+        {
+            CheckVessel(vessel);
         }
 
         protected override void OnPartAttach(GameEvents.HostTargetAction<Part, Part> e)

@@ -27,7 +27,7 @@ namespace ContractConfigurator
             LOAD_CONFIG,
         }
 
-        private static ContractConfigurator Instance;
+        internal static ContractConfigurator Instance;
 
         public static bool reloading = false;
         static ReloadStep reloadStep = ReloadStep.GAME_DATABASE;
@@ -43,6 +43,8 @@ namespace ContractConfigurator
 
         [Obsolete("Use GameEvents.Contract.onParameterChange instead")]
         public static EventData<Contract, ContractParameter> OnParameterChange = new EventData<Contract, ContractParameter>("OnParameterChange");
+
+        public static EventData<Vessel, ProtoCrewMember> OnVesselCrewDie = new EventData<Vessel, ProtoCrewMember>("OnVesselCrewDie");
 
         public static Dictionary<string, Type> contractTypeMap = new Dictionary<string, Type>();
 
