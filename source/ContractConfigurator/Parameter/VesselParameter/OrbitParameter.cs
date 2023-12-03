@@ -403,10 +403,11 @@ namespace ContractConfigurator.Parameters
         protected override void OnUpdate()
         {
             base.OnUpdate();
-            if (UnityEngine.Time.fixedTime - lastUpdate > UPDATE_FREQUENCY)
+            if (Time.fixedTime - lastUpdate > UPDATE_FREQUENCY)
             {
                 lastUpdate = UnityEngine.Time.fixedTime;
-                CheckVessel(FlightGlobals.ActiveVessel);
+                Vessel trackedVessel = CurrentVessel() ?? FlightGlobals.ActiveVessel;
+                CheckVessel(trackedVessel);
             }
         }
 

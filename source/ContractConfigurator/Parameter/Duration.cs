@@ -225,7 +225,7 @@ namespace ContractConfigurator.Parameters
                 }
 
                 // Additional check when under a VesselParameterGroup
-                VesselParameterGroup vpg = Parent as VesselParameterGroup;
+                VesselParameterGroup vpg = GetParameterGroupHost();
                 if (vpg != null && vpg.VesselList.Any())
                 {
                     completed &= ContractVesselTracker.Instance.GetAssociatedKeys(FlightGlobals.ActiveVessel).
