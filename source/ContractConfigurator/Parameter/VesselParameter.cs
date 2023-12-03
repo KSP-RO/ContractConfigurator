@@ -193,7 +193,12 @@ namespace ContractConfigurator.Parameters
             // Force to failure if failWhenUnmet is set
             if (failWhenUnmet && state == ParameterState.Incomplete)
             {
-                SetState(ParameterState.Failed);
+                // but when using VPG logic only do it when the vessel is the one being tracked
+                VesselParameterGroup vpg = GetParameterGroupHost();
+                if (vpg == null || vpg.TrackedVessel == vessel)
+                {
+                    SetState(ParameterState.Failed);
+                }
             }
 
             // Set the state
@@ -642,8 +647,9 @@ namespace ContractConfigurator.Parameters
                 if (vpg != null)
                 {
                     // Set the craft specific state
-                    bool stateChanged = SetState(vessel, VesselMeetsCondition(vessel) ?
-                        Contracts.ParameterState.Complete : Contracts.ParameterState.Incomplete) || forceStateChange;
+                    ParameterState newState = VesselMeetsCondition(vessel) ?
+                        Contracts.ParameterState.Complete : Contracts.ParameterState.Incomplete;
+                    bool stateChanged = SetState(vessel, newState) || forceStateChange;
 
                     // Update the group
                     if (stateChanged)
