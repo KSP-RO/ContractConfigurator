@@ -181,6 +181,8 @@ namespace ContractConfigurator.ExpressionParser
             RegisterLocalFunction(new Function<T, T>("Sinh", Sinh));
             RegisterLocalFunction(new Function<T, T>("Cosh", Cosh));
             RegisterLocalFunction(new Function<T, T>("Tanh", Tanh));
+            RegisterLocalFunction(new Function<T, T, T>("Mod", Mod));
+            RegisterLocalFunction(new Function<T, T>("Abs", Abs));
         }
 
         public static string PrintNumber(T tval)
@@ -354,6 +356,24 @@ namespace ContractConfigurator.ExpressionParser
             double da = (double)Convert.ChangeType(a, typeof(double));
 
             double val = Math.Tanh(da);
+            return (T)Convert.ChangeType(val, typeof(T));
+        }
+
+        private static T Mod(T a, T b)
+        {
+            double da = (double)Convert.ChangeType(a, typeof(double));
+            double db = (double)Convert.ChangeType(b, typeof(double));
+
+            double val = da % db;
+
+            return (T)Convert.ChangeType(val, typeof(T));
+        }
+
+        private static T Abs(T a)
+        {
+            double da = (double)Convert.ChangeType(a, typeof(double));
+
+            double val = Math.Abs(da);
             return (T)Convert.ChangeType(val, typeof(T));
         }
 
