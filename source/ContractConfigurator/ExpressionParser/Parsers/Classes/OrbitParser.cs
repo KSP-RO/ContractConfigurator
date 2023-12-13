@@ -32,6 +32,12 @@ namespace ContractConfigurator.ExpressionParser
             RegisterMethod(new Method<Orbit, double>("Eccentricity", GetEccentricity, false));
             RegisterMethod(new Method<Orbit, double>("LAN", GetLAN, false));
             RegisterMethod(new Method<Orbit, double>("Period", GetPeriod, false));
+            RegisterMethod(new Method<Orbit, double>("MeanAnomaly", GetMeanAnomaly, false));
+            RegisterMethod(new Method<Orbit, double>("MeanAnomalyAtEpoch", GetMeanAnomalyAtEpoch, false));
+            RegisterMethod(new Method<Orbit, double>("Epoch", GetEpoch, false));
+            RegisterMethod(new Method<Orbit, double>("SemiMajorAxis", GetSemiMajorAxis, false));
+            RegisterMethod(new Method<Orbit, double>("ArgumentOfPeriapsis", GetArgumentOfPeriapsis, false));
+            RegisterMethod(new Method<Orbit, CelestialBody>("ReferenceBody", GetReferenceBody, false));
 
             RegisterGlobalFunction(new Function<Orbit, Orbit>("Orbit", o => o));
         }
@@ -114,6 +120,66 @@ namespace ContractConfigurator.ExpressionParser
             }
 
             return orbit.period;
+        }
+
+        static double GetMeanAnomaly(Orbit orbit)
+        {
+            if (orbit == null)
+            {
+                return 0.0;
+            }
+
+            return orbit.meanAnomaly;
+        }
+
+        static double GetMeanAnomalyAtEpoch(Orbit orbit)
+        {
+            if (orbit == null)
+            {
+                return 0.0;
+            }
+
+            return orbit.meanAnomalyAtEpoch;
+        }
+
+        static double GetEpoch(Orbit orbit)
+        {
+            if (orbit == null)
+            {
+                return 0.0;
+            }
+
+            return orbit.epoch;
+        }
+
+        static double GetSemiMajorAxis(Orbit orbit)
+        {
+            if (orbit == null)
+            {
+                return 0.0;
+            }
+
+            return orbit.semiMajorAxis;
+        }
+
+        static double GetArgumentOfPeriapsis(Orbit orbit)
+        {
+            if (orbit == null)
+            {
+                return 0.0;
+            }
+
+            return orbit.argumentOfPeriapsis;
+        }
+
+        static CelestialBody GetReferenceBody(Orbit orbit)
+        {
+            if (orbit == null)
+            {
+                return null;
+            }
+
+            return orbit.referenceBody;
         }
     }
 }
