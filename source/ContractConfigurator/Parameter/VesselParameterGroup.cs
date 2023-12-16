@@ -473,6 +473,7 @@ namespace ContractConfigurator.Parameters
                 if (dissassociateVesselsOnContractCompletion && !string.IsNullOrEmpty(define) && trackedVessel != null)
                 {
                     LoggingUtil.LogVerbose(this, "Removing defined vessel {0}", define);
+                    ContractVesselTracker.Instance.AssociateVessel(define, null);
                 }
 
                 if (!string.IsNullOrEmpty(defineList) && trackedVessel != null)
