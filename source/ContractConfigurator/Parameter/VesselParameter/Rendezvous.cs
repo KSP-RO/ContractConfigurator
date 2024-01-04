@@ -144,18 +144,14 @@ namespace ContractConfigurator.Parameters
                 }
 
                 bool forceStateChange = false;
-                bool rendezvous = false;
 
                 // Distance to a specific craft
                 if (v2 != null)
                 {
                     float distance = Vector3.Distance(v1.transform.position, v2.transform.position);
-                    if (distance < this.distance)
-                    {
-                        rendezvous = true;
-                        forceStateChange |= SetState(v1, ParameterState.Complete);
-                        forceStateChange |= SetState(v2, ParameterState.Complete);
-                    }
+                    bool rendezvous = distance < this.distance;
+                    forceStateChange |= SetState(v1, rendezvous ? ParameterState.Complete : ParameterState.Incomplete);
+                    forceStateChange |= SetState(v2, rendezvous ? ParameterState.Complete : ParameterState.Incomplete);
                 }
                 else
                 {
@@ -164,20 +160,14 @@ namespace ContractConfigurator.Parameters
                         if (v != v1 && v.vesselType != VesselType.EVA && v.vesselType != VesselType.Debris && v.vesselType != VesselType.Flag)
                         {
                             float distance = Vector3.Distance(v1.transform.position, v.transform.position);
-                            if (distance < this.distance)
-                            {
-                                rendezvous = true;
-                                forceStateChange |= SetState(v1, ParameterState.Complete);
-                                forceStateChange |= SetState(v, ParameterState.Complete);
-                            }
+                            bool rendezvous = distance < this.distance;
+                            forceStateChange |= SetState(v1, rendezvous ? ParameterState.Complete : ParameterState.Incomplete);
+                            forceStateChange |= SetState(v, rendezvous ? ParameterState.Complete : ParameterState.Incomplete);
                         }
                     }
                 }
 
-                if (rendezvous)
-                {
-                    CheckVessel(FlightGlobals.ActiveVessel, forceStateChange);
-                }
+                CheckVessel(FlightGlobals.ActiveVessel, forceStateChange);
             }
         }
         
