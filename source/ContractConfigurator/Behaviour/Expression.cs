@@ -123,7 +123,7 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnParameterStateChange(ContractParameter param)
         {
-            if (param.State == ParameterState.Complete && onParameterComplete.ContainsKey(param.ID))
+            if (param.ID != null && param.State == ParameterState.Complete && onParameterComplete.ContainsKey(param.ID))
             {
                 ExecuteExpressions(onParameterComplete[param.ID]);
                 onParameterComplete[param.ID].Clear();
