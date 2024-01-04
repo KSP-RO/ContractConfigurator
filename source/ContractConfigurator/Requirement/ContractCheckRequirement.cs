@@ -28,23 +28,17 @@ namespace ContractConfigurator
             const string nullString = null; // to get around the fact this is overloaded.
             valid &= ConfigNodeUtil.ParseValue<string>(configNode, "tag", x => tag = x, this, nullString);
 
-            // Get type
-            string contractType = null;
-            valid &= tag != null || ConfigNodeUtil.ParseValue<string>(configNode, "contractType", x => contractType = x, this);
-
             // By default, always check the requirement for active contracts
             valid &= ConfigNodeUtil.ParseValue<bool>(configNode, "checkOnActiveContract", x => checkOnActiveContract = x, this, true);
 
-            if (valid)
-            {
-                if (tag == null)
-                    valid &= SetValues(contractType);
-                else
-                    ccType = null;
-            }
+            // Get type
+            string dummy = null;
+            valid &= ConfigNodeUtil.ParseValue<string>(configNode, "contractType", x => dummy = x, this, SetValues);
 
             valid &= ConfigNodeUtil.ParseValue<uint>(configNode, "minCount", x => minCount = x, this, 1);
             valid &= ConfigNodeUtil.ParseValue<uint>(configNode, "maxCount", x => maxCount = x, this, UInt32.MaxValue);
+
+            valid &= ConfigNodeUtil.MutuallyExclusive(configNode, new string[] { "tag" }, new string[] { "contractType" }, this);
 
             return valid;
         }
