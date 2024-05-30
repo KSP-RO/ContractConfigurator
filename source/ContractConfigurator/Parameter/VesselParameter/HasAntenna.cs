@@ -18,7 +18,8 @@ namespace ContractConfigurator.Parameters
         public enum AntennaType
 		{
 			RELAY,
-			TRANSMIT
+			TRANSMIT,
+			EITHER
 		};
 
 		protected double minAntennaPower { get; set; }
@@ -58,7 +59,12 @@ namespace ContractConfigurator.Parameters
                     countStr = Localizer.Format("#cc.param.count.between.num", KSPUtil.PrintSI(minAntennaPower, ""), KSPUtil.PrintSI(maxAntennaPower, ""));
                 }
 
-                this.title = Localizer.Format(antennaType == AntennaType.TRANSMIT ? "#cc.param.HasAntenna.transmit" : "#cc.param.HasAntenna.relay", countStr);
+                switch (antennaType)
+                {
+                    case AntennaType.RELAY: this.title = Localizer.Format("#cc.param.HasAntenna.relay", countStr); break;
+                    case AntennaType.TRANSMIT: this.title = Localizer.Format("#cc.param.HasAntenna.transmit", countStr); break;
+                    case AntennaType.EITHER: this.title = Localizer.Format("#cc.param.HasAntenna.either", countStr); break;
+                }
             }
             else
             {
@@ -108,14 +114,14 @@ namespace ContractConfigurator.Parameters
             double antennaPower = 0.0f;
             if (vessel.connection != null)
             {
-				if (antennaType == AntennaType.RELAY)
-				{
-					antennaPower = vessel.connection.Comm.antennaRelay.power;
-				}
-				else
-				{
-					antennaPower = vessel.connection.Comm.antennaTransmit.power;
-				}
+                double relayAntennaPower = vessel.connection.Comm.antennaRelay.power;
+                double transmitAntennaPower = vessel.connection.Comm.antennaTransmit.power;
+                switch (antennaType)
+                {
+                    case AntennaType.RELAY: antennaPower = relayAntennaPower; break;
+                    case AntennaType.TRANSMIT: antennaPower = transmitAntennaPower; break;
+                    case AntennaType.EITHER: antennaPower = Math.Max(relayAntennaPower, transmitAntennaPower); break;
+                }
             }
             return antennaPower >= minAntennaPower && antennaPower <= maxAntennaPower;
         }
