@@ -530,33 +530,47 @@ namespace ContractConfigurator.ExpressionParser
             try
             {
                 List<T> values = new List<T>();
-                values.Add(ParseStatement<T>());
 
-                Token token = null;
-                while (token == null)
+                string savedExpression = expression;
+
+                Token token = ParseToken();
+                if (token == null)
                 {
-                    token = ParseToken();
-                    if (token == null)
-                    {
-                        throw new ArgumentException("Expected ',' or ']', got end of statement.");
-                    }
+                    throw new ArgumentException("Unexpected end of statement while parsing list.");
+                }
 
-                    switch (token.tokenType)
+                if (token.tokenType != TokenType.LIST_END)
+                {
+                    expression = savedExpression;
+
+                    values.Add(ParseStatement<T>());
+
+                    token = null;
+                    while (token == null)
                     {
-                        case TokenType.COMMA:
-                            values.Add(ParseStatement<T>());
-                            token = null;
-                            break;
-                        case TokenType.LIST_END:
-                            break;
-                        default:
-                            expression = token.sval + expression;
-                            throw new ArgumentException(StringBuilderCache.Format("Unexpected value: {0}", token.sval));
+                        token = ParseToken();
+                        if (token == null)
+                        {
+                            throw new ArgumentException("Expected ',' or ']', got end of statement.");
+                        }
+
+                        switch (token.tokenType)
+                        {
+                            case TokenType.COMMA:
+                                values.Add(ParseStatement<T>());
+                                token = null;
+                                break;
+                            case TokenType.LIST_END:
+                                break;
+                            default:
+                                expression = token.sval + expression;
+                                throw new ArgumentException(StringBuilderCache.Format("Unexpected value: {0}", token.sval));
+                        }
                     }
                 }
 
                 // See what's next to parse
-                string savedExpression = expression;
+                savedExpression = expression;
                 token = ParseToken();
                 ExpressionParser<List<T>> parser = GetParser<List<T>>(this);
                 if (token == null)
