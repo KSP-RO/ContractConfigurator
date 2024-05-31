@@ -39,6 +39,7 @@ namespace ContractConfigurator.ExpressionParser
             RegisterMethod(new Method<List<T>, int, T>("ElementAt", (l, i) => l == null ? default(T) : l.ElementAtOrDefault(i)));
 
             RegisterMethod(new Method<List<T>, T, bool>("Contains", (l, o) => l == null ? false : l.Contains(o)));
+            RegisterMethod(new Method<List<T>, T, int>("IndexOf", (l, o) => l == null ? -1 : l.IndexOf(o)));
 
             RegisterMethod(new Method<List<T>, int>("Count", l => l == null ? 0 : l.Count));
 
@@ -46,6 +47,8 @@ namespace ContractConfigurator.ExpressionParser
             RegisterMethod(new Method<List<T>, T, List<T>>("Add", (l, v) => { if (l == null) { l = new List<T>(); } l.ToList().Add(v); return l; }));
             RegisterMethod(new Method<List<T>, T, List<T>>("Exclude", (l, v) => { if (l != null) { l = l.ToList(); l.Remove(v); }  return l; }));
             RegisterMethod(new Method<List<T>, List<T>, List<T>>("ExcludeAll", (l, l2) => { if (l != null) { l = l.ToList(); if (l2 != null) { l.RemoveAll(x => l2.Contains(x)); } } return l; }));
+            RegisterMethod(new Method<List<T>, int, T, List<T>>("ReplaceElementAt", ReplaceElementAt));
+            RegisterMethod(new Method<List<T>, int, List<T>>("Resize", Resize));
 
             RegisterMethod(new Method<List<T>, T>("SelectUnique", SelectUnique, false));
         }
@@ -178,6 +181,29 @@ namespace ContractConfigurator.ExpressionParser
             return values.Skip(r.Next(values.Count())).FirstOrDefault();
         }
 
+        protected static List<T> ReplaceElementAt(List<T> list, int idx, T replacement)
+        {
+            if (list == null || idx < 0 || idx >= list.Count)
+                return list;
+
+            var newList = list.ToList();
+            newList[idx] = replacement;
+
+            return newList;
+        }
+
+        protected static List<T> Resize(List<T> list, int size)
+        {
+            var newList = new List<T>();
+
+            if (list != null && size > 0)
+                newList.AddRange(list.Take(size));
+
+            if (newList.Count < size)
+                newList.AddRange(Enumerable.Repeat(default(T), size - newList.Count));
+
+            return newList;
+        }
 
         public ListExpressionParser()
         {
