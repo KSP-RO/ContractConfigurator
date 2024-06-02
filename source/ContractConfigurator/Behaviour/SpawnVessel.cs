@@ -557,25 +557,13 @@ namespace ContractConfigurator.Behaviour
 
                     // Figure out the surface height and rotation
                     Quaternion normal = Quaternion.LookRotation(new Vector3((float)norm.x, (float)norm.y, (float)norm.z));
-                    Quaternion rotation = Quaternion.identity;
-                    float heading = vesselData.heading;
-                    if (shipConstruct == null)
-                    {
-                        rotation = rotation * Quaternion.FromToRotation(Vector3.up, Vector3.back);
-                    }
-                    else if (shipConstruct.shipFacility == EditorFacility.SPH)
-                    {
-                        rotation = rotation * Quaternion.FromToRotation(Vector3.forward, -Vector3.forward);
-                        heading += 180.0f;
-                    }
-                    else
-                    {
-                        rotation = rotation * Quaternion.FromToRotation(Vector3.up, Vector3.forward);
-                    }
+                    var rotation = Quaternion.Euler(vesselData.roll, vesselData.pitch, vesselData.heading);
 
-                    rotation = rotation * Quaternion.AngleAxis(vesselData.pitch, Vector3.right);
-                    rotation = rotation * Quaternion.AngleAxis(vesselData.roll, Vector3.down);
-                    rotation = rotation * Quaternion.AngleAxis(heading, Vector3.forward);
+                    rotation = rotation * Quaternion.AngleAxis(180, Vector3.up);
+                    if (shipConstruct?.shipFacility == EditorFacility.VAB)
+                    {
+                        rotation = rotation * Quaternion.FromToRotation(Vector3.forward, Vector3.up);
+                    }
 
                     // Set the height and rotation
                     if (landed || splashed)
@@ -584,7 +572,7 @@ namespace ContractConfigurator.Behaviour
                         hgt += vesselData.height;
                         protoVesselNode.SetValue("hgt", hgt.ToString());
                     }
-                    protoVesselNode.SetValue("rot", KSPUtil.WriteQuaternion(rotation * normal));
+                    protoVesselNode.SetValue("rot", KSPUtil.WriteQuaternion(normal * rotation));
 
                     // Set the normal vector relative to the surface
                     Vector3 nrm = (rotation * Vector3.forward);
