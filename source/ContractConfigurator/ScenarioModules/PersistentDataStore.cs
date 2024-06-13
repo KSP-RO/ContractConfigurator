@@ -245,6 +245,10 @@ namespace ContractConfigurator
                 Biome b = (Biome)value;
                 strValue = b.body.name + ";" + b.biome;
             }
+            else if (type == typeof(Experience.ExperienceTrait))
+            {
+                strValue = ((Experience.ExperienceTrait)(value)).TypeName;
+            }
             else if (type.Name == "List`1")
             {
                 strValue = "[ ";

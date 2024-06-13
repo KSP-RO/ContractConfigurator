@@ -394,6 +394,10 @@ namespace ContractConfigurator
             {
                 value = (T)(object)ParseLaunchSiteValue(stringValue);
             }
+            else if (typeof(T) == typeof(Experience.ExperienceTrait))
+            {
+                value = (T)(object)ParseExperienceTrait(stringValue);
+            }
             // Do newline conversions
             else if (typeof(T) == typeof(string))
             {
@@ -1067,6 +1071,20 @@ namespace ContractConfigurator
                 if (pcm.name == name)
                 {
                     return pcm;
+                }
+            }
+
+            return null;
+        }
+
+        public static Experience.ExperienceTrait ParseExperienceTrait(string traitName)
+        {
+            for (int index = 0; index < GameDatabase.Instance.ExperienceConfigs.Categories.Count; ++index)
+            {
+                if (traitName == GameDatabase.Instance.ExperienceConfigs.Categories[index].Name)
+                {
+                    Type type = KerbalRoster.GetExperienceTraitType(traitName) ?? typeof(Experience.ExperienceTrait);
+                    return Experience.ExperienceTrait.Create(type, GameDatabase.Instance.ExperienceConfigs.Categories[index], null);
                 }
             }
 

@@ -88,7 +88,7 @@ namespace ContractConfigurator.ExpressionParser
                 return true;
             }
 
-            return a.TypeName == b.TypeName;
+            return a?.TypeName == b?.TypeName;
         }
 
         public override ExperienceTrait ParseIdentifier(Token token)
@@ -110,17 +110,13 @@ namespace ContractConfigurator.ExpressionParser
                 return null;
             }
 
-            for (int index = 0; index < GameDatabase.Instance.ExperienceConfigs.Categories.Count; ++index)
+            var result = ConfigNodeUtil.ParseExperienceTrait(identifier);
+            if (result == null)
             {
-                if (identifier == GameDatabase.Instance.ExperienceConfigs.Categories[index].Name)
-                {
-                    Type type = KerbalRoster.GetExperienceTraitType(identifier) ?? typeof(ExperienceTrait);
-                    return ExperienceTrait.Create(type, GameDatabase.Instance.ExperienceConfigs.Categories[index], null);
-                }
+                LoggingUtil.LogError(this, StringBuilderCache.Format("Unknown experience trait '{0}'.", identifier));
             }
 
-            LoggingUtil.LogError(this, StringBuilderCache.Format("Unknown experience trait '{0}'.", identifier));
-            return null;
+            return result;
         }
     }
 }
