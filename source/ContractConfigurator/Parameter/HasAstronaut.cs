@@ -159,6 +159,7 @@ namespace ContractConfigurator.Parameters
             GameEvents.onVesselChange.Add(OnVesselChange);
             GameEvents.onKerbalStatusChange.Add(OnKerbalStatusChange);
             GameEvents.Contract.onAccepted.Add(OnContractAccepted);
+            GameEvents.OnCrewmemberHired.Add(OnCrewmemberHired);
         }
 
         protected override void OnUnregister()
@@ -168,6 +169,7 @@ namespace ContractConfigurator.Parameters
             GameEvents.onVesselChange.Remove(OnVesselChange);
             GameEvents.onKerbalStatusChange.Remove(OnKerbalStatusChange);
             GameEvents.Contract.onAccepted.Remove(OnContractAccepted);
+            GameEvents.OnCrewmemberHired.Remove(OnCrewmemberHired);
         }
 
         protected void OnVesselChange(Vessel v)
@@ -187,6 +189,11 @@ namespace ContractConfigurator.Parameters
                 return;
             }
 
+            CheckStatus();
+        }
+
+        protected void OnCrewmemberHired(ProtoCrewMember pcm, int activeCrewCount)
+        {
             CheckStatus();
         }
 
