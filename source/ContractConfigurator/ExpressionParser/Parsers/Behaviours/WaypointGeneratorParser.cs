@@ -84,7 +84,6 @@ namespace ContractConfigurator.ExpressionParser
                     }
                     else
                     {
-                        yield return "nearIndex";
                         yield return "minDistance";
                         yield return "maxDistance";
                     }

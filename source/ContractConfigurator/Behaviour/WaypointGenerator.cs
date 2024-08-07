@@ -33,9 +33,11 @@ namespace ContractConfigurator.Behaviour
             public Vector3d pqsOffset;
             public LaunchSite launchSite = null;
             public List<string> parameter = new List<string>();
+            public string vessel = null;
             public int count = 1;
             public bool underwater = false;
             public bool isAdded = false;
+            public bool isInitialized = false;
 
             public WaypointData()
             {
@@ -76,6 +78,7 @@ namespace ContractConfigurator.Behaviour
                 pqsOffset = orig.pqsOffset;
                 launchSite = orig.launchSite;
                 parameter = orig.parameter.ToList();
+                vessel = orig.vessel;
                 underwater = orig.underwater;
 
                 SetContract(contract);
@@ -90,6 +93,7 @@ namespace ContractConfigurator.Behaviour
                 }
             }
         }
+
         private List<WaypointData> waypoints = new List<WaypointData>();
         private bool initialized = false;
         private bool boundToMapViewEvent = false;
@@ -144,6 +148,9 @@ namespace ContractConfigurator.Behaviour
                 LoggingUtil.LogVerbose(this, "Initializing waypoint generator.");
                 foreach (WaypointData wpData in waypoints)
                 {
+                    if (wpData.isInitialized)
+                        continue;
+
                     CelestialBody body = FlightGlobals.Bodies.Where<CelestialBody>(b => b.name == wpData.waypoint.celestialName).FirstOrDefault();
                     if (body == null)
                     {
@@ -176,61 +183,17 @@ namespace ContractConfigurator.Behaviour
                     }
                     else if (wpData.type == "RANDOM_WAYPOINT_NEAR")
                     {
-                        Waypoint nearWaypoint = waypoints[wpData.nearIndex].waypoint;
-
-                        LoggingUtil.LogVerbose(this, "   Generating a random waypoint near waypoint {0}...", nearWaypoint.name);
-
-                        if (!nearWaypoint.celestialBody.hasSolidSurface)
-                            wpData.waterAllowed = true;
-
-
-                        // Convert input to radians
-                        double rlat1 = nearWaypoint.latitude * Math.PI / 180.0;
-                        double rlon1 = nearWaypoint.longitude * Math.PI / 180.0;
-
-                        for (int i = 0; i < 10000; i++)
+                        // This type supports deferred generation of waypoints.
+                        // For instance the vessel might not be available yet so the coordinates cannot be generated either.
+                        if (string.IsNullOrEmpty(wpData.vessel))
                         {
-                            // Sliding window
-                            double window = (i < 100 ? 1 : (1.01 * (i-100+1)));
-                            double max = wpData.maxDistance * window;
-                            double min = wpData.minDistance / window;
-
-                            // Distance between our point and the random waypoint
-                            double d = min + random.NextDouble() * (max - min);
-
-                            // Random bearing
-                            double brg = random.NextDouble() * 2.0 * Math.PI;
-
-                            // Angle between our point and the random waypoint
-                            double a = d / nearWaypoint.celestialBody.Radius;
-
-                            // Calculate the coordinates
-                            double rlat2 = Math.Asin(Math.Sin(rlat1) * Math.Cos(a) + Math.Cos(rlat1) * Math.Sin(a) * Math.Cos(brg));
-                            double rlon2;
-
-                            // Check for pole
-                            if (Math.Abs(Math.Cos(rlat1)) < 0.0001)
-                            {
-                                rlon2 = rlon1;
-                            }
-                            else
-                            {
-                                rlon2 = ((rlon1 - Math.Asin(Math.Sin(brg) * Math.Sin(a) / Math.Cos(rlat2)) + Math.PI) % (2.0 * Math.PI)) - Math.PI;
-                            }
-
-                            wpData.waypoint.latitude = rlat2 * 180.0 / Math.PI;
-                            wpData.waypoint.longitude = rlon2 * 180.0 / Math.PI;
-
-                            // Calculate the waypoint altitude
-                            Vector3d radialVector = QuaternionD.AngleAxis(wpData.waypoint.longitude, Vector3d.down) *
-                              QuaternionD.AngleAxis(wpData.waypoint.latitude, Vector3d.forward) * Vector3d.right;
-                            double altitude = body.pqsController.GetSurfaceHeight(radialVector) - body.pqsController.radius;
-
-                            // Check water conditions if required
-                            if (!nearWaypoint.celestialBody.hasSolidSurface || !nearWaypoint.celestialBody.ocean || (wpData.waterAllowed && !wpData.underwater)|| (wpData.underwater && altitude < 0) || (!wpData.underwater && altitude > 0))
-                            {
-                                break;
-                            }
+                            if (!InitWPNearOtherWP(wpData))
+                                continue;
+                        }
+                        else
+                        {
+                            if (!InitWPNearVessel(wpData))
+                                continue;
                         }
                     }
                     else if (wpData.type == "PQS_CITY")
@@ -244,12 +207,96 @@ namespace ContractConfigurator.Behaviour
 
                     // Set altitude
                     SetAltitude(wpData, body);
+                    wpData.isInitialized = true;
 
                     LoggingUtil.LogVerbose(this, "   Generated waypoint {0} at {1}, {2}.", wpData.waypoint.name, wpData.waypoint.latitude, wpData.waypoint.longitude);
                 }
 
-                initialized = true;
+                initialized = waypoints.All(w => w.isInitialized);
                 LoggingUtil.LogVerbose(this, "Waypoint generator initialized.");
+            }
+        }
+
+        private bool InitWPNearOtherWP(WaypointData wpData)
+        {
+            WaypointData otherWPData = waypoints[wpData.nearIndex];
+            if (!otherWPData.isInitialized)
+                return false;
+            Waypoint nearWaypoint = otherWPData.waypoint;
+
+            LoggingUtil.LogVerbose(this, "   Generating a random waypoint near waypoint {0}...", nearWaypoint.name);
+
+            CelestialBody body = nearWaypoint.celestialBody;
+
+            InitWPNearPoint(wpData, body, nearWaypoint.latitude, nearWaypoint.longitude);
+            return true;
+        }
+
+        private bool InitWPNearVessel(WaypointData wpData)
+        {
+            Vessel nearVessel = ContractVesselTracker.Instance.GetAssociatedVessel(wpData.vessel);
+            if (nearVessel == null)
+                return false;
+
+            LoggingUtil.LogVerbose(this, "   Generating a random waypoint near vessel {0}...", nearVessel.name);
+
+            InitWPNearPoint(wpData, nearVessel.mainBody, nearVessel.latitude, nearVessel.longitude);
+
+            return true;
+        }
+
+        private static void InitWPNearPoint(WaypointData wpData, CelestialBody body, double lat, double lon)
+        {
+            // Convert input to radians
+            double rlat1 = lat * Math.PI / 180.0;
+            double rlon1 = lon * Math.PI / 180.0;
+
+            if (!body.hasSolidSurface)
+                wpData.waterAllowed = true;
+
+            for (int i = 0; i < 10000; i++)
+            {
+                // Sliding window
+                double window = (i < 100 ? 1 : (1.01 * (i - 100 + 1)));
+                double max = wpData.maxDistance * window;
+                double min = wpData.minDistance / window;
+
+                // Distance between our point and the random waypoint
+                double d = min + random.NextDouble() * (max - min);
+
+                // Random bearing
+                double brg = random.NextDouble() * 2.0 * Math.PI;
+
+                // Angle between our point and the random waypoint
+                double a = d / body.Radius;
+
+                // Calculate the coordinates
+                double rlat2 = Math.Asin(Math.Sin(rlat1) * Math.Cos(a) + Math.Cos(rlat1) * Math.Sin(a) * Math.Cos(brg));
+                double rlon2;
+
+                // Check for pole
+                if (Math.Abs(Math.Cos(rlat1)) < 0.0001)
+                {
+                    rlon2 = rlon1;
+                }
+                else
+                {
+                    rlon2 = ((rlon1 - Math.Asin(Math.Sin(brg) * Math.Sin(a) / Math.Cos(rlat2)) + Math.PI) % (2.0 * Math.PI)) - Math.PI;
+                }
+
+                wpData.waypoint.latitude = rlat2 * 180.0 / Math.PI;
+                wpData.waypoint.longitude = rlon2 * 180.0 / Math.PI;
+
+                // Calculate the waypoint altitude
+                Vector3d radialVector = QuaternionD.AngleAxis(wpData.waypoint.longitude, Vector3d.down) *
+                  QuaternionD.AngleAxis(wpData.waypoint.latitude, Vector3d.forward) * Vector3d.right;
+                double altitude = body.pqsController.GetSurfaceHeight(radialVector) - body.pqsController.radius;
+
+                // Check water conditions if required
+                if (!body.hasSolidSurface || !body.ocean || (wpData.waterAllowed && !wpData.underwater) || (wpData.underwater && altitude < 0) || (!wpData.underwater && altitude > 0))
+                {
+                    break;
+                }
             }
         }
 
@@ -416,10 +463,16 @@ namespace ContractConfigurator.Behaviour
                         // Get settings for randomization
                         valid &= ConfigNodeUtil.ParseValue<bool>(child, "waterAllowed", x => wpData.waterAllowed = x, factory, true);
 
+                        valid &= ConfigNodeUtil.OnlyOne(child, new string[] { "vessel", "nearIndex" }, factory);
+                        ConfigNodeUtil.ParseValue<string>(child, "vessel", x => wpData.vessel = x, factory, defaultValue: null);
+
                         // Get near waypoint details
-                        valid &= ConfigNodeUtil.ParseValue<int>(child, "nearIndex", x => wpData.nearIndex = x, factory,
-                            x => Validation.GE(x, 0) && Validation.LT(x, wpGenerator.waypoints.Count));
-                        valid &= ConfigNodeUtil.ParseValue<bool>(child, "chained", x => wpData.chained = x, factory, false);
+                        if (string.IsNullOrEmpty(wpData.vessel))
+                        {
+                            valid &= ConfigNodeUtil.ParseValue<int>(child, "nearIndex", x => wpData.nearIndex = x, factory,
+                                x => Validation.GE(x, 0) && Validation.LT(x, wpGenerator.waypoints.Count));
+                            valid &= ConfigNodeUtil.ParseValue<bool>(child, "chained", x => wpData.chained = x, factory, false);
+                        }
                         valid &= ConfigNodeUtil.ParseValue<int>(child, "count", x => wpData.count = x, factory, 1, x => Validation.GE(x, 1));
 
                         // Get distances
@@ -574,7 +627,7 @@ namespace ContractConfigurator.Behaviour
                     wpData.isAdded = false;
 
                     string paramID = wpData.parameter.FirstOrDefault();
-                    if (wpData.waypoint.visible && wpData.waypoint.contractReference != null &&
+                    if (wpData.isInitialized && wpData.waypoint.visible && wpData.waypoint.contractReference != null &&
                         (!wpData.parameter.Any() || wpData.waypoint.contractReference.AllParameters.
                          Any(p => p.ID == paramID && p.State == ParameterState.Complete)))
                     {
@@ -594,6 +647,7 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnOffered()
         {
+            Initialize();
             foreach (WaypointData wpData in waypoints)
             {
                 string paramID = wpData.parameter.FirstOrDefault();
@@ -639,6 +693,12 @@ namespace ContractConfigurator.Behaviour
                 wpData.waypoint.celestialName = child.GetValue("celestialName");
                 wpData.waypoint.name = child.GetValue("name");
                 wpData.waypoint.id = child.GetValue("icon");
+                wpData.vessel = child.GetValue("vessel");
+                wpData.nearIndex = ConfigNodeUtil.ParseValue<int>(child, "nearIndex", -1);
+                wpData.count = ConfigNodeUtil.ParseValue<int>(child, "count", 1);
+                wpData.isInitialized = ConfigNodeUtil.ParseValue<bool>(child, "isInitialized", defaultValue: true);
+                wpData.minDistance = ConfigNodeUtil.ParseValue<double>(child, "minDistance", 0d);
+                wpData.maxDistance = ConfigNodeUtil.ParseValue<double>(child, "maxDistance", 0d);
                 wpData.waypoint.latitude = Convert.ToDouble(child.GetValue("latitude"));
                 wpData.waypoint.longitude = Convert.ToDouble(child.GetValue("longitude"));
                 wpData.waypoint.altitude = Convert.ToDouble(child.GetValue("altitude"));
@@ -695,6 +755,13 @@ namespace ContractConfigurator.Behaviour
                 child.AddValue("celestialName", wpData.waypoint.celestialName);
                 child.AddValue("name", wpData.waypoint.name);
                 child.AddValue("icon", wpData.waypoint.id);
+                child.AddValue("nearIndex", wpData.nearIndex);
+                if (wpData.vessel != null)
+                    child.AddValue("vessel", wpData.vessel);
+                child.AddValue("minDistance", wpData.minDistance);
+                child.AddValue("maxDistance", wpData.maxDistance);
+                child.AddValue("count", wpData.count);
+                child.AddValue("isInitialized", wpData.isInitialized);
                 child.AddValue("latitude", wpData.waypoint.latitude);
                 child.AddValue("longitude", wpData.waypoint.longitude);
                 child.AddValue("altitude", wpData.waypoint.altitude);
