@@ -80,12 +80,6 @@ namespace ContractConfigurator.Util
             offeredOrbitButton = UnityEngine.Object.Instantiate(lastButton.button.gameObject);
             offeredOrbitButton.name = "Button Offered Orbits";
 
-            // Fix z coordinates
-            activeWaypointButton.GetComponent<RectTransform>().SetLocalPositionZ(750);
-            offeredWaypointButton.GetComponent<RectTransform>().SetLocalPositionZ(750);
-            activeOrbitButton.GetComponent<RectTransform>().SetLocalPositionZ(750);
-            offeredOrbitButton.GetComponent<RectTransform>().SetLocalPositionZ(750);
-
             // Set up the tool-tips
             activeWaypointButton.GetComponent<TooltipController_Text>().textString = "Toggle Active Waypoints";
             offeredWaypointButton.GetComponent<TooltipController_Text>().textString = "Toggle Offered Waypoints";
@@ -133,12 +127,10 @@ namespace ContractConfigurator.Util
 
             // Re-parent
             GameObject trackingFilters = lastButton.button.transform.parent.gameObject;
-            RectTransform trackingFiltersRect = trackingFilters.GetComponent<RectTransform>();
-            trackingFiltersRect.sizeDelta = new Vector2(trackingFiltersRect.sizeDelta.x + 44 * 2, trackingFiltersRect.sizeDelta.y);
-            activeWaypointButton.transform.SetParent(trackingFilters.transform);
-            offeredWaypointButton.transform.SetParent(trackingFilters.transform);
-            activeOrbitButton.transform.SetParent(trackingFilters.transform);
-            offeredOrbitButton.transform.SetParent(trackingFilters.transform);
+            activeWaypointButton.transform.SetParent(trackingFilters.transform, false);
+            offeredWaypointButton.transform.SetParent(trackingFilters.transform, false);
+            activeOrbitButton.transform.SetParent(trackingFilters.transform, false);
+            offeredOrbitButton.transform.SetParent(trackingFilters.transform, false);
             activeWaypointButton.SetActive(true);
             offeredWaypointButton.SetActive(true);
             activeOrbitButton.SetActive(true);
@@ -149,7 +141,7 @@ namespace ContractConfigurator.Util
             if (commNet != null)
             {
                 RectTransform r = commNet.GetComponent<RectTransform>();
-                r.localPosition = new Vector3(r.localPosition.x + 132, r.localPosition.y);
+                r.localPosition = new Vector3(r.localPosition.x + 140, r.localPosition.y);
             }
 
             LoggingUtil.LogVerbose(this, "Finished setup");

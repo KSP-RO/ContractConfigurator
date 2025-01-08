@@ -346,7 +346,7 @@ namespace ContractConfigurator.Util
                 {
                     toggleAllObj = UnityEngine.Object.Instantiate<GameObject>(toggleAvailable);
                     toggleAllObj.name = "Toggle All";
-                    toggleAllObj.transform.SetParent(sortGroup.transform);
+                    toggleAllObj.transform.SetParent(sortGroup.transform, false);
                     toggleAllObj.transform.SetAsFirstSibling();
                 }
 
@@ -1012,7 +1012,7 @@ namespace ContractConfigurator.Util
             {
                 availableTextObject = UnityEngine.Object.Instantiate<GameObject>(groupContainer.mcListItem.title.gameObject);
                 availableTextObject.name = "AvailableText";
-                availableTextObject.transform.SetParent(groupContainer.mcListItem.title.transform.parent);
+                availableTextObject.transform.SetParent(groupContainer.mcListItem.title.transform.parent, false);
                 RectTransform availableTextRect = availableTextObject.GetComponent<RectTransform>();
                 availableTextRect.anchoredPosition3D = textRect.anchoredPosition3D;
                 availableTextRect.sizeDelta = new Vector2(textRect.sizeDelta.x + 4, textRect.sizeDelta.y - 4);
@@ -1070,7 +1070,7 @@ namespace ContractConfigurator.Util
             cc.statusImage = statusImage.AddComponent<UIStateImage>();
             cc.statusImage.states = itemStatusStates;
             cc.statusImage.image = statusImage.AddComponent<Image>();
-            statusImage.transform.SetParent(mcListItem.transform);
+            statusImage.transform.SetParent(mcListItem.transform, false);
 
             // Finalize difficulty UI
             RectTransform diffRect = mcListItem.difficulty.GetComponent<RectTransform>();
@@ -1148,7 +1148,7 @@ namespace ContractConfigurator.Util
             UIList<KSP.UI.UIListItem> childUIList = (UIList<KSP.UI.UIListItem>)childUIListField.GetValue(MissionControl.Instance.scrollListContracts);
             List<UIListData<KSP.UI.UIListItem>> listData = (List<UIListData<KSP.UI.UIListItem>>)listDataField.GetValue(childUIList);
             listData.Insert(index + 1, new UIListData<KSP.UI.UIListItem>((KSP.UI.UIListItem)null, container.mcListItem.container));
-            container.mcListItem.container.transform.SetParent(childUIList.listAnchor);
+            container.mcListItem.container.transform.SetParent(childUIList.listAnchor, false);
             container.mcListItem.container.transform.localPosition = new Vector3(container.mcListItem.container.transform.localPosition.x, container.mcListItem.container.transform.localPosition.y, 0.0f);
 
             container.listItemTransform = container.mcListItem.transform;
@@ -1214,7 +1214,7 @@ namespace ContractConfigurator.Util
 
             // Re-order the hierarchy to add spacers for indented items
             GameObject go = new GameObject("GroupContainer");
-            go.transform.parent = mcListItem.transform.parent;
+            go.transform.SetParent(mcListItem.transform.parent, false);
             go.AddComponent<RectTransform>();
             go.AddComponent<CanvasRenderer>();
             go.AddComponent<HorizontalLayoutGroup>();
@@ -1229,8 +1229,8 @@ namespace ContractConfigurator.Util
             spacerFitter.horizontalFit = ContentSizeFitter.FitMode.MinSize;
 
             // Re-parent the spacer and list item
-            spacer.transform.SetParent(go.transform);
-            mcListItem.transform.SetParent(go.transform);
+            spacer.transform.SetParent(go.transform, false);
+            mcListItem.transform.SetParent(go.transform, false);
 
             // Perform some surgery on the list item to set its preferred width to the correct value
             LayoutElement le = mcListItem.GetComponent<LayoutElement>();
