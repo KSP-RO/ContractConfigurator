@@ -80,6 +80,7 @@ namespace ContractConfigurator.Behaviour
                 parameter = orig.parameter.ToList();
                 vessel = orig.vessel;
                 underwater = orig.underwater;
+                isInitialized = orig.isInitialized;
 
                 SetContract(contract);
             }
