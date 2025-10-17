@@ -7,6 +7,7 @@ using KSP;
 using Contracts;
 using ContractConfigurator;
 using ContractConfigurator.ExpressionParser;
+using UnityEngine.SceneManagement;
 
 namespace ContractConfigurator.Behaviour
 {
@@ -15,7 +16,26 @@ namespace ContractConfigurator.Behaviour
     /// </summary>
     public class SpawnVessel : ContractBehaviour, IHasKerbalBehaviour, IKerbalNameStorage
     {
-        private class CrewData
+		public class ConditionDetail
+		{
+			public enum Condition
+			{
+				CONTRACT_ACCEPTED,
+				CONTRACT_FAILED,
+				CONTRACT_SUCCESS,
+				CONTRACT_COMPLETED,
+				PARAMETER_FAILED,
+				PARAMETER_COMPLETED
+			}
+
+			public Condition condition;
+			public string parameter;
+		}
+
+		protected List<ConditionDetail> conditions = new List<ConditionDetail>();
+        protected SpawnVessel spawnVessel;
+
+		private class CrewData
         {
             public string name = null;
             public ProtoCrewMember.Gender? gender = null;
@@ -85,8 +105,9 @@ namespace ContractConfigurator.Behaviour
         private List<VesselData> vessels = new List<VesselData>();
         private bool vesselsCreated = false;
         private bool deferVesselCreation = false;
+		private bool switchtoTrackingStation = false;
 
-        public int KerbalCount
+		public int KerbalCount
         {
             get
             {
@@ -100,10 +121,13 @@ namespace ContractConfigurator.Behaviour
         /// Copy Constructor.
         /// </summary>
         /// <param name="orig"></param>
-        public SpawnVessel(SpawnVessel orig)
+        public SpawnVessel(List<ConditionDetail> conditions, SpawnVessel orig)
         {
             deferVesselCreation = orig.deferVesselCreation;
-            foreach (VesselData vessel in orig.vessels)
+			switchtoTrackingStation = orig.switchtoTrackingStation;
+			this.conditions = conditions;
+
+			foreach (VesselData vessel in orig.vessels)
             {
                 if (vessel.pqsCity != null)
                 {
@@ -138,8 +162,16 @@ namespace ContractConfigurator.Behaviour
             SpawnVessel spawnVessel = new SpawnVessel();
 
             ConfigNodeUtil.ParseValue<bool>(configNode, "deferVesselCreation", x => spawnVessel.deferVesselCreation = x, factory, false);
+			ConfigNodeUtil.ParseValue<bool>(configNode, "switchtoTrackingStation", x => spawnVessel.switchtoTrackingStation = x, factory, false);
 
-            bool valid = true;
+			foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
+			{
+				ConditionDetail cd = new ConditionDetail();
+				ConfigNodeUtil.ParseValue<ConditionDetail.Condition>(configNode, "condition", x => cd.condition = x, factory, ConditionDetail.Condition.CONTRACT_COMPLETED);
+				ConfigNodeUtil.ParseValue<string>(configNode, "parameter", x => cd.parameter = x, factory, (string)null);
+			}
+
+			bool valid = true;
             int index = 0;
             foreach (ConfigNode child in ConfigNodeUtil.GetChildNodes(configNode, "VESSEL"))
             {
@@ -278,12 +310,16 @@ namespace ContractConfigurator.Behaviour
 
         protected bool CreateVessels()
         {
-            if (vesselsCreated)
+			if (vesselsCreated)
             {
-                return false;
+				return false;
             }
 
-            String gameDataDir = KSPUtil.ApplicationRootPath;
+			// Some vessels will fail to spawn if in Flight and running certain part modules with background processing
+			if (switchtoTrackingStation && HighLogic.LoadedScene == GameScenes.FLIGHT)
+			    HighLogic.LoadScene(GameScenes.TRACKSTATION);
+
+			String gameDataDir = KSPUtil.ApplicationRootPath;
             gameDataDir = gameDataDir.Replace("\\", "/");
             if (!gameDataDir.EndsWith("/"))
             {
@@ -294,11 +330,11 @@ namespace ContractConfigurator.Behaviour
             // Spawn the vessel in the game world
             foreach (VesselData vesselData in vessels)
             {
-                LoggingUtil.LogVerbose(this, "Spawning a vessel named '{0}'", vesselData.name);
+				LoggingUtil.LogVerbose(this, "Spawning a vessel named '{0}'", vesselData.name);
 
                 // Set additional info for landed vessels
                 bool landed = false;
-                if (!vesselData.orbiting)
+				if (!vesselData.orbiting)
                 {
                     landed = true;
                     if (vesselData.altitude == null)
@@ -585,6 +621,7 @@ namespace ContractConfigurator.Behaviour
                 ProtoVessel protoVessel = new ProtoVessel(protoVesselNode, HighLogic.CurrentGame);
                 protoVessel.Load(HighLogic.CurrentGame.flightState);
 
+
                 // Store the id for later use
                 vesselData.id = protoVessel.vesselRef.id;
 
@@ -593,7 +630,9 @@ namespace ContractConfigurator.Behaviour
             }
 
             vesselsCreated = true;
-            return true;
+			// After the vessels are created, save the game again so we don't lose our changes
+			GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
+			return true;
         }
 
         protected override void OnSave(ConfigNode configNode)
@@ -601,8 +640,20 @@ namespace ContractConfigurator.Behaviour
             base.OnSave(configNode);
             configNode.AddValue("vesselsCreated", vesselsCreated);
             configNode.AddValue("deferVesselCreation", deferVesselCreation);
+			configNode.AddValue("switchtoTrackingStation", switchtoTrackingStation);
+			foreach (ConditionDetail cd in conditions)
+			{
+				ConfigNode child = new ConfigNode("CONDITION");
+				configNode.AddNode(child);
 
-            foreach (VesselData vd in vessels)
+				child.AddValue("condition", cd.condition);
+				if (!string.IsNullOrEmpty(cd.parameter))
+				{
+					child.AddValue("parameter", cd.parameter);
+				}
+			}
+
+			foreach (VesselData vd in vessels)
             {
                 ConfigNode child = new ConfigNode("VESSEL_DETAIL");
 
@@ -664,11 +715,20 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnLoad(ConfigNode configNode)
         {
-            base.OnLoad(configNode);
+			base.OnLoad(configNode);
             vesselsCreated = ConfigNodeUtil.ParseValue<bool>(configNode, "vesselsCreated");
             deferVesselCreation = ConfigNodeUtil.ParseValue<bool?>(configNode, "deferVesselCreation", (bool?)false).Value;
+			switchtoTrackingStation = ConfigNodeUtil.ParseValue<bool?>(configNode, "switchtoTrackingStation", (bool?)false).Value;
 
-            foreach (ConfigNode child in configNode.GetNodes("VESSEL_DETAIL"))
+			foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
+			{
+				ConditionDetail cd = new ConditionDetail();
+				cd.condition = ConfigNodeUtil.ParseValue<ConditionDetail.Condition>(child, "condition");
+				cd.parameter = ConfigNodeUtil.ParseValue<string>(child, "parameter", (string)null);
+				conditions.Add(cd);
+			}
+
+			foreach (ConfigNode child in configNode.GetNodes("VESSEL_DETAIL"))
             {
                 // Read all the orbit data
                 VesselData vd = new VesselData();
@@ -712,13 +772,11 @@ namespace ContractConfigurator.Behaviour
         protected override void OnRegister()
         {
             GameEvents.onVesselRecovered.Add(OnVesselRecovered);
-            GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoad);
         }
 
         protected override void OnUnregister()
         {
             GameEvents.onVesselRecovered.Remove(OnVesselRecovered);
-            GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoad);
         }
 
         private void OnVesselRecovered(ProtoVessel v, bool quick)
@@ -775,27 +833,42 @@ namespace ContractConfigurator.Behaviour
             }
         }
 
-        private void OnGameSceneLoad(GameScenes gameScene)
-        {
-            if (deferVesselCreation && (gameScene == GameScenes.FLIGHT || gameScene == GameScenes.TRACKSTATION || gameScene == GameScenes.EDITOR))
-            {
-                if (CreateVessels())
-                {
-                    // After the vessels are created, save the game again so we don't lose our changes
-                    GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-                }
-            }
-        }
-
         protected override void OnAccepted()
         {
-            if (!deferVesselCreation)
-            {
+			foreach (ConditionDetail cd in conditions.Where(cd => cd.condition == ConditionDetail.Condition.CONTRACT_ACCEPTED))
+				CreateVessels();
+			if (conditions.Count == 0)
                 CreateVessels();
-            }
         }
 
-        protected override void OnCancelled()
+		protected override void OnCompleted()
+		{
+			foreach (ConditionDetail cd in conditions.Where(cd => cd.condition == ConditionDetail.Condition.CONTRACT_COMPLETED || cd.condition == ConditionDetail.Condition.CONTRACT_SUCCESS))
+				CreateVessels();
+		}
+
+		protected override void OnFailed()
+		{
+			foreach (ConditionDetail cd in conditions.Where(cd => cd.condition == ConditionDetail.Condition.CONTRACT_FAILED))
+				CreateVessels();
+		}
+
+		protected override void OnParameterStateChange(ContractParameter param)
+		{
+			if (param.State == ParameterState.Incomplete)
+			{
+				return;
+			}
+			ConditionDetail.Condition cond = param.State == ParameterState.Complete ?
+				ConditionDetail.Condition.PARAMETER_COMPLETED :
+				ConditionDetail.Condition.PARAMETER_FAILED;
+
+			LoggingUtil.LogDebug(this, "OnParameterStateChange() Triggered on " + param.ID + ":" + param.State);
+			foreach (ConditionDetail cd in conditions.Where(cd => cd.condition == cond && cd.parameter == param.ID))
+				CreateVessels();
+		}
+
+		protected override void OnCancelled()
         {
             RemoveVessels();
         }
@@ -812,7 +885,7 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnGenerateFailed()
         {
-            RemoveVessels();
+			RemoveVessels();
         }
 
         protected override void OnOfferExpired()
@@ -827,9 +900,9 @@ namespace ContractConfigurator.Behaviour
 
         private void RemoveVessels()
         {
-            foreach (VesselData vd in vessels)
+			foreach (VesselData vd in vessels)
             {
-                Vessel vessel = FlightGlobals.Vessels.Find(v => v != null && v.id == vd.id);
+				Vessel vessel = FlightGlobals.Vessels.Find(v => v != null && v.id == vd.id);
                 if (vessel != null)
                 {
                     vessel.state = Vessel.State.DEAD;
