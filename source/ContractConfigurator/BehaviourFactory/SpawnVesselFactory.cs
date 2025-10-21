@@ -1,6 +1,5 @@
 ﻿using ContractConfigurator;
 using ContractConfigurator.ExpressionParser;
-using KerKonConConExt;
 using KSP;
 using System;
 using System.Collections.Generic;
