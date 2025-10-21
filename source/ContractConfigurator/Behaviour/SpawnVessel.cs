@@ -445,7 +445,7 @@ namespace ContractConfigurator.Behaviour
                         // Add the crew member
                         if (part != null)
                         {
-                            ProtoCrewMember crewMember = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(cm => cm.name == cd.name).FirstOrDefault<ProtoCrewMember>();
+                            ProtoCrewMember crewMember = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(cm => cm.name == cd.name && cm.rosterStatus == ProtoCrewMember.RosterStatus.Available).FirstOrDefault<ProtoCrewMember>();
                             // Create the ProtoCrewMember if does not exist
                             if (crewMember == null || crewMember.name != cd.name)
                             {
