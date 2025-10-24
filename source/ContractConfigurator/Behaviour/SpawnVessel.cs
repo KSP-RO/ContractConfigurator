@@ -318,7 +318,10 @@ namespace ContractConfigurator.Behaviour
 
             // Some vessels will fail to spawn if in Flight and running certain part modules with background processing
             if (switchtoTrackingStation && HighLogic.LoadedScene == GameScenes.FLIGHT)
+            {
+                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                 HighLogic.LoadScene(GameScenes.TRACKSTATION);
+            }
 
             String gameDataDir = KSPUtil.ApplicationRootPath;
             gameDataDir = gameDataDir.Replace("\\", "/");
