@@ -16,31 +16,32 @@ namespace ContractConfigurator.Behaviour
     {
         protected List<SpawnVessel.ConditionDetail> conditions = new List<SpawnVessel.ConditionDetail>();
         protected SpawnVessel spawnVessel;
+
         public override bool Load(ConfigNode configNode)
         {
             // Load base class
             bool valid = base.Load(configNode);
 
-        int index = 0;
-        foreach (ConfigNode child in ConfigNodeUtil.GetChildNodes(configNode, "CONDITION"))
-        {
-            DataNode childDataNode = new DataNode("CONDITION_" + index++, dataNode, this);
-            try
+            int index = 0;
+            foreach (ConfigNode child in ConfigNodeUtil.GetChildNodes(configNode, "CONDITION"))
             {
-                ConfigNodeUtil.SetCurrentDataNode(childDataNode);
-                SpawnVessel.ConditionDetail cd = new SpawnVessel.ConditionDetail();
-                valid &= ConfigNodeUtil.ParseValue<SpawnVessel.ConditionDetail.Condition>(child, "condition", x => cd.condition = x, this);
-                valid &= ConfigNodeUtil.ParseValue<string>(child, "parameter", x => cd.parameter = x, this, "", x => ValidateMandatoryParameter(x, cd.condition));
-                conditions.Add(cd);
+                DataNode childDataNode = new DataNode("CONDITION_" + index++, dataNode, this);
+                try
+                {
+                    ConfigNodeUtil.SetCurrentDataNode(childDataNode);
+                    SpawnVessel.ConditionDetail cd = new SpawnVessel.ConditionDetail();
+                    valid &= ConfigNodeUtil.ParseValue<SpawnVessel.ConditionDetail.Condition>(child, "condition", x => cd.condition = x, this);
+                    valid &= ConfigNodeUtil.ParseValue<string>(child, "parameter", x => cd.parameter = x, this, "", x => ValidateMandatoryParameter(x, cd.condition));
+                    conditions.Add(cd);
+                }
+                finally
+                {
+                    ConfigNodeUtil.SetCurrentDataNode(dataNode);
+                }
             }
-            finally
-            {
-                ConfigNodeUtil.SetCurrentDataNode(dataNode);
-            }
-        }
 
-        // Call SpawnKerbal for load behaviour
-        spawnVessel = SpawnVessel.Create(configNode, this);
+            // Call SpawnKerbal for load behaviour
+            spawnVessel = SpawnVessel.Create(configNode, this);
 
             return valid && spawnVessel != null;
         }
@@ -54,6 +55,7 @@ namespace ContractConfigurator.Behaviour
             }
             return true;
         }
+
         public override ContractBehaviour Generate(ConfiguredContract contract)
         {
             return new SpawnVessel(conditions, spawnVessel);

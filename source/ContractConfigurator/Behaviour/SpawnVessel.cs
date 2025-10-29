@@ -7,7 +7,6 @@ using KSP;
 using Contracts;
 using ContractConfigurator;
 using ContractConfigurator.ExpressionParser;
-using UnityEngine.SceneManagement;
 
 namespace ContractConfigurator.Behaviour
 {
@@ -42,6 +41,7 @@ namespace ContractConfigurator.Behaviour
             public bool addToRoster = true;
 
             public CrewData() { }
+
             public CrewData(CrewData cd)
             {
                 name = cd.name;
@@ -105,7 +105,7 @@ namespace ContractConfigurator.Behaviour
         private List<VesselData> vessels = new List<VesselData>();
         private bool vesselsCreated = false;
         private bool deferVesselCreation = false;
-        private bool switchtoTrackingStation = false;
+        private bool switchToTrackingStation = false;
 
         public int KerbalCount
         {
@@ -124,7 +124,7 @@ namespace ContractConfigurator.Behaviour
         public SpawnVessel(List<ConditionDetail> conditions, SpawnVessel orig)
         {
             deferVesselCreation = orig.deferVesselCreation;
-            switchtoTrackingStation = orig.switchtoTrackingStation;
+            switchToTrackingStation = orig.switchToTrackingStation;
             this.conditions = conditions;
 
             foreach (VesselData vessel in orig.vessels)
@@ -162,7 +162,7 @@ namespace ContractConfigurator.Behaviour
             SpawnVessel spawnVessel = new SpawnVessel();
 
             ConfigNodeUtil.ParseValue<bool>(configNode, "deferVesselCreation", x => spawnVessel.deferVesselCreation = x, factory, false);
-            ConfigNodeUtil.ParseValue<bool>(configNode, "switchtoTrackingStation", x => spawnVessel.switchtoTrackingStation = x, factory, false);
+            ConfigNodeUtil.ParseValue<bool>(configNode, "switchToTrackingStation", x => spawnVessel.switchToTrackingStation = x, factory, false);
 
             foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
             {
@@ -317,7 +317,7 @@ namespace ContractConfigurator.Behaviour
             }
 
             // Some vessels will fail to spawn if in Flight and running certain part modules with background processing
-            if (switchtoTrackingStation && HighLogic.LoadedScene == GameScenes.FLIGHT)
+            if (switchToTrackingStation && HighLogic.LoadedScene == GameScenes.FLIGHT)
             {
                 GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
                 HighLogic.LoadScene(GameScenes.TRACKSTATION);
@@ -648,7 +648,7 @@ namespace ContractConfigurator.Behaviour
             base.OnSave(configNode);
             configNode.AddValue("vesselsCreated", vesselsCreated);
             configNode.AddValue("deferVesselCreation", deferVesselCreation);
-            configNode.AddValue("switchtoTrackingStation", switchtoTrackingStation);
+            configNode.AddValue("switchToTrackingStation", switchToTrackingStation);
             foreach (ConditionDetail cd in conditions)
             {
                 ConfigNode child = new ConfigNode("CONDITION");
@@ -727,7 +727,7 @@ namespace ContractConfigurator.Behaviour
             base.OnLoad(configNode);
             vesselsCreated = ConfigNodeUtil.ParseValue<bool>(configNode, "vesselsCreated");
             deferVesselCreation = ConfigNodeUtil.ParseValue<bool?>(configNode, "deferVesselCreation", (bool?)false).Value;
-            switchtoTrackingStation = ConfigNodeUtil.ParseValue<bool?>(configNode, "switchtoTrackingStation", (bool?)false).Value;
+            switchToTrackingStation = ConfigNodeUtil.ParseValue<bool?>(configNode, "switchToTrackingStation", (bool?)false).Value;
 
             foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
             {
@@ -845,9 +845,10 @@ namespace ContractConfigurator.Behaviour
 
         protected override void OnAccepted()
         {
-            foreach (ConditionDetail cd in conditions.Where(cd => cd.condition == ConditionDetail.Condition.CONTRACT_ACCEPTED))
-                CreateVessels();
-            if (conditions.Count == 0)
+            if (conditions.Count > 0)
+                foreach (ConditionDetail cd in conditions.Where(cd => cd.condition == ConditionDetail.Condition.CONTRACT_ACCEPTED))
+                    CreateVessels();
+            else
                 CreateVessels();
         }
 
