@@ -104,7 +104,7 @@ namespace ContractConfigurator.Behaviour
         }
         private List<VesselData> vessels = new List<VesselData>();
         private bool vesselsCreated = false;
-        private bool deferVesselCreation = false;
+        private bool deferVesselCreation = false; // deferVesselCreation is deprecated and is retained only as a dummy variable
         private bool switchToTrackingStation = false;
 
         public int KerbalCount
@@ -123,7 +123,6 @@ namespace ContractConfigurator.Behaviour
         /// <param name="orig"></param>
         public SpawnVessel(List<ConditionDetail> conditions, SpawnVessel orig)
         {
-            deferVesselCreation = orig.deferVesselCreation;
             switchToTrackingStation = orig.switchToTrackingStation;
             this.conditions = conditions;
 
@@ -160,7 +159,7 @@ namespace ContractConfigurator.Behaviour
         public static SpawnVessel Create(ConfigNode configNode, SpawnVesselFactory factory)
         {
             SpawnVessel spawnVessel = new SpawnVessel();
-
+            // deferVesselCreation is deprecated and is retained only as a dummy variable
             ConfigNodeUtil.ParseValue<bool>(configNode, "deferVesselCreation", x => spawnVessel.deferVesselCreation = x, factory, false);
             ConfigNodeUtil.ParseValue<bool>(configNode, "switchToTrackingStation", x => spawnVessel.switchToTrackingStation = x, factory, false);
 
@@ -647,7 +646,6 @@ namespace ContractConfigurator.Behaviour
         {
             base.OnSave(configNode);
             configNode.AddValue("vesselsCreated", vesselsCreated);
-            configNode.AddValue("deferVesselCreation", deferVesselCreation);
             configNode.AddValue("switchToTrackingStation", switchToTrackingStation);
             foreach (ConditionDetail cd in conditions)
             {
@@ -726,7 +724,6 @@ namespace ContractConfigurator.Behaviour
         {
             base.OnLoad(configNode);
             vesselsCreated = ConfigNodeUtil.ParseValue<bool>(configNode, "vesselsCreated");
-            deferVesselCreation = ConfigNodeUtil.ParseValue<bool?>(configNode, "deferVesselCreation", (bool?)false).Value;
             switchToTrackingStation = ConfigNodeUtil.ParseValue<bool?>(configNode, "switchToTrackingStation", (bool?)false).Value;
 
             foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
