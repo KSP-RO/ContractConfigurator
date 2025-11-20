@@ -104,7 +104,6 @@ namespace ContractConfigurator.Behaviour
         }
         private List<VesselData> vessels = new List<VesselData>();
         private bool vesselsCreated = false;
-        private bool switchToTrackingStation = false;
 
         public int KerbalCount
         {
@@ -122,7 +121,6 @@ namespace ContractConfigurator.Behaviour
         /// <param name="orig"></param>
         public SpawnVessel(List<ConditionDetail> conditions, SpawnVessel orig)
         {
-            switchToTrackingStation = orig.switchToTrackingStation;
             this.conditions = conditions;
 
             foreach (VesselData vessel in orig.vessels)
@@ -160,7 +158,6 @@ namespace ContractConfigurator.Behaviour
             SpawnVessel spawnVessel = new SpawnVessel();
             bool dummy = false;
             ConfigNodeUtil.ParseValue<bool>(configNode, "deferVesselCreation", x => dummy = x, factory, false); // deferVesselCreation is deprecated
-            ConfigNodeUtil.ParseValue<bool>(configNode, "switchToTrackingStation", x => spawnVessel.switchToTrackingStation = x, factory, false);
 
             foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
             {
@@ -312,13 +309,6 @@ namespace ContractConfigurator.Behaviour
             if (vesselsCreated)
             {
                 return false;
-            }
-
-            // Some vessels will fail to spawn if in Flight and running certain part modules with background processing
-            if (switchToTrackingStation && HighLogic.LoadedScene == GameScenes.FLIGHT)
-            {
-                GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
-                HighLogic.LoadScene(GameScenes.TRACKSTATION);
             }
 
             String gameDataDir = KSPUtil.ApplicationRootPath;
@@ -645,7 +635,6 @@ namespace ContractConfigurator.Behaviour
         {
             base.OnSave(configNode);
             configNode.AddValue("vesselsCreated", vesselsCreated);
-            configNode.AddValue("switchToTrackingStation", switchToTrackingStation);
             foreach (ConditionDetail cd in conditions)
             {
                 ConfigNode child = new ConfigNode("CONDITION");
@@ -723,7 +712,6 @@ namespace ContractConfigurator.Behaviour
         {
             base.OnLoad(configNode);
             vesselsCreated = ConfigNodeUtil.ParseValue<bool>(configNode, "vesselsCreated");
-            switchToTrackingStation = ConfigNodeUtil.ParseValue<bool?>(configNode, "switchToTrackingStation", (bool?)false).Value;
 
             foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
             {
