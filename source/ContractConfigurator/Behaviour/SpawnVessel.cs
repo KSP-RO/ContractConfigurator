@@ -104,7 +104,6 @@ namespace ContractConfigurator.Behaviour
         }
         private List<VesselData> vessels = new List<VesselData>();
         private bool vesselsCreated = false;
-        private bool deferVesselCreation = false; // deferVesselCreation is deprecated and is retained only as a dummy variable
         private bool switchToTrackingStation = false;
 
         public int KerbalCount
@@ -159,8 +158,8 @@ namespace ContractConfigurator.Behaviour
         public static SpawnVessel Create(ConfigNode configNode, SpawnVesselFactory factory)
         {
             SpawnVessel spawnVessel = new SpawnVessel();
-            // deferVesselCreation is deprecated and is retained only as a dummy variable
-            ConfigNodeUtil.ParseValue<bool>(configNode, "deferVesselCreation", x => spawnVessel.deferVesselCreation = x, factory, false);
+            bool dummy = false;
+            ConfigNodeUtil.ParseValue<bool>(configNode, "deferVesselCreation", x => dummy = x, factory, false); // deferVesselCreation is deprecated
             ConfigNodeUtil.ParseValue<bool>(configNode, "switchToTrackingStation", x => spawnVessel.switchToTrackingStation = x, factory, false);
 
             foreach (ConfigNode child in configNode.GetNodes("CONDITION"))
