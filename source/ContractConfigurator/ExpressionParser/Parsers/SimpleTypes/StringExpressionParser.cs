@@ -90,14 +90,15 @@ namespace ContractConfigurator.ExpressionParser
 
                     value = (string)(object)result ?? "";
                 }
-                else
+                else if (token != null && token.tokenType == TokenType.FUNCTION)
                 {
                     // Check for an immediate function call 
-                    Match m = Regex.Match(expression, @"^\w[\w\d]*\(");
-                    if (m.Success)
-                    {
-                        return base.ParseStatement<TResult>();
-                    }
+                    // Match m = Regex.Match(expression, @"^\w[\w\d]*\(");
+                    // if (m.Success)
+                    // {
+                    //     return base.ParseStatement<TResult>();
+                    // }
+                    return base.ParseStatement<TResult>();
                 }
 
                 while (expression.Length > 0)
@@ -110,7 +111,7 @@ namespace ContractConfigurator.ExpressionParser
                     int dataStoreIdentifierIndex = m.Success ? m.Index : -1;
 
                     // Look for function calls
-                    m = Regex.Match(expression, @"(\A|\s)\w[\w\d]*\(");
+                    m = Regex.Match(expression, @"(\A|\s)[A-Za-z][A-Za-z0-9_]*\(");
                     int functionIndex = m == Match.Empty ? -1 : m.Index;
 
                     // Look for an end quote
