@@ -93,12 +93,11 @@ namespace ContractConfigurator.ExpressionParser
                 else if (token != null && token.tokenType == TokenType.FUNCTION)
                 {
                     // Check for an immediate function call 
-                    // Match m = Regex.Match(expression, @"^\w[\w\d]*\(");
-                    // if (m.Success)
-                    // {
-                    //     return base.ParseStatement<TResult>();
-                    // }
-                    return base.ParseStatement<TResult>();
+                    Match m = Regex.Match(expression, @"^[A-Za-z][A-Za-z0-9_]*\(");
+                    if (m.Success)
+                    {
+                        return base.ParseStatement<TResult>();
+                    }
                 }
 
                 while (expression.Length > 0)
