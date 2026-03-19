@@ -90,7 +90,7 @@ namespace ContractConfigurator.ExpressionParser
 
                     value = (string)(object)result ?? "";
                 }
-                else if (token != null && token.tokenType == TokenType.FUNCTION)
+                else
                 {
                     // Check for an immediate function call 
                     Match m = Regex.Match(expression, @"^[A-Za-z][A-Za-z0-9_]*\(");
