@@ -41,6 +41,23 @@ namespace ContractConfigurator.Harmony
             }
         }
 
+        /// <summary>
+        /// Make KSP count pre-loaded CC contracts toward the offered-contract quota
+        /// </summary>
+        /// <param name="__result"></param>
+        /// <param name="difficulty"></param>
+        [HarmonyPostfix]
+        [HarmonyPatch("CountContracts")]
+        internal static void Postfix_CountContracts(ref int __result, Contract.ContractPrestige difficulty)
+        {
+            if (ContractPreLoader.Instance == null) return;
+            foreach (ConfiguredContract c in ContractPreLoader.Instance.PendingContracts())
+            {
+                if (c.Prestige == difficulty)
+                    __result++;
+            }
+        }
+
         private class PostfixEnumerator : IEnumerable
         {
             public IEnumerator enumerator;
