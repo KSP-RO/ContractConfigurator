@@ -29,7 +29,7 @@ namespace ContractConfigurator
         private static System.Random rand = new System.Random();
         private static int nextContractGroup = rand.Next();
 
-        private List<ConfiguredContract> contracts = new List<ConfiguredContract>();
+        private readonly List<ConfiguredContract> contracts = new List<ConfiguredContract>();
 
         private string lastKey = null;
         private double lastGenerationFailure;
@@ -376,7 +376,7 @@ namespace ContractConfigurator
         {
             try
             {
-                foreach (ConfiguredContract contract in contracts.Where(c => c.ContractState == Contract.State.Offered))
+                foreach (ConfiguredContract contract in contracts)
                 {
                     ConfigNode child = new ConfigNode("CONTRACT");
                     node.AddNode(child);
@@ -436,9 +436,15 @@ namespace ContractConfigurator
             }
         }
 
-        public IEnumerable<ConfiguredContract> PendingContracts()
+        /// <summary>
+        /// Contracts that have been generated but not yet accepted. Not all of may be presented to the player.
+        /// Do not edit the returned collection directly.
+        /// </summary>
+        /// <returns></returns>
+        public List<ConfiguredContract> PendingContracts()
         {
-            return contracts.Where(c => c.ContractState == Contract.State.Offered);
+            // contracts only ever holds State.Offered contracts
+            return contracts;
         }
     }
 }
