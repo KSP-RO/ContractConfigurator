@@ -58,6 +58,22 @@ namespace ContractConfigurator.Harmony
             }
         }
 
+        /// <summary>
+        /// Skip weighted random selection when ConfiguredContract is the only registered contract type.
+        /// </summary>
+        [HarmonyPrefix]
+        [HarmonyPatch("WeightedContractChoice")]
+        internal static bool Prefix_WeightedContractChoice(ref Type __result)
+        {
+            if (ContractSystem.ContractTypes?.Count == 1 &&
+                ContractSystem.ContractTypes[0] == typeof(ConfiguredContract))
+            {
+                __result = typeof(ConfiguredContract);
+                return false;
+            }
+            return true;
+        }
+
         private class PostfixEnumerator : IEnumerable
         {
             public IEnumerator enumerator;
