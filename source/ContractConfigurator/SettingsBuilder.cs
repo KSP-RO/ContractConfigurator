@@ -45,6 +45,16 @@ namespace ContractConfigurator
             toolTip = "#cc.settings.contractMultiplier.desc")]
         public float ActiveContractMultiplier = 1.0f;
 
+        public enum ContractLimitPrestigeOverride
+        {
+            None,
+            Trivial,
+            Significant,
+            Exceptional
+        }
+
+        public ContractLimitPrestigeOverride contractLimitPrestigeOverride = ContractLimitPrestigeOverride.None;
+
         public enum MissionControlButton
         {
             All,
@@ -58,11 +68,13 @@ namespace ContractConfigurator
         public override void OnSave(ConfigNode node)
         {
             node.AddValue("lastMCButton", lastMCButton);
+            node.AddValue("contractLimitPrestigeOverride", contractLimitPrestigeOverride);
         }
 
         public override void OnLoad(ConfigNode node)
         {
             lastMCButton = ConfigNodeUtil.ParseValue<MissionControlButton>(node, "lastMCButton", MissionControlButton.All);
+            contractLimitPrestigeOverride = ConfigNodeUtil.ParseValue<ContractLimitPrestigeOverride>(node, "contractLimitPrestigeOverride", ContractLimitPrestigeOverride.None);
         }
     }
 

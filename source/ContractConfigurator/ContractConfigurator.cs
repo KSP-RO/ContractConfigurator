@@ -573,6 +573,20 @@ namespace ContractConfigurator
                 ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.MissionControl));
             float rep = Reputation.Instance.reputation;
             float mult = HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().ActiveContractMultiplier;
+            switch (HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().contractLimitPrestigeOverride)
+            {
+                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.None:
+                    break;
+                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.Trivial:
+                    prestige = Contract.ContractPrestige.Trivial;
+                    break;
+                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.Significant:
+                    prestige = Contract.ContractPrestige.Significant;
+                    break;
+                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.Exceptional:
+                    prestige = Contract.ContractPrestige.Exceptional;
+                    break;
+            }
             switch (prestige)
             {
                 case Contract.ContractPrestige.Trivial:
@@ -580,7 +594,7 @@ namespace ContractConfigurator
                 case Contract.ContractPrestige.Significant:
                     return Math.Max(1, (int)Math.Round((rep + rep * level / 3) * mult / 250 + 4 + level));
                 case Contract.ContractPrestige.Exceptional:
-                    return Math.Max(0, (int)Math.Round((rep + rep * level / 3) * mult / (1000/3.0) + 2 + level));
+                    return Math.Max(0, (int)Math.Round((rep + rep * level / 3) * mult / (1000 / 3.0) + 2 + level));
             }
             return 0;
         }
