@@ -58,7 +58,7 @@ namespace ContractConfigurator
             OnParameterChange.Add(ParameterChange);
             GameEvents.OnTechnologyResearched.Add(OnTechResearched);
             GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
-            GameEvents.onLevelWasLoaded.Add(OnLevelWasLoaded);
+            GameEvents.onLevelWasLoaded.Add(OnLevelLoaded);
         }
 
         void OnDestroy()
@@ -66,7 +66,7 @@ namespace ContractConfigurator
             OnParameterChange.Remove(ParameterChange);
             GameEvents.OnTechnologyResearched.Remove(OnTechResearched);
             GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
-            GameEvents.onLevelWasLoaded.Remove(OnLevelWasLoaded);
+            GameEvents.onLevelWasLoaded.Remove(OnLevelLoaded);
         }
 
         void PSystemReady()
@@ -562,7 +562,7 @@ namespace ContractConfigurator
             ConfiguredContract.ClearStaticState();
         }
 
-        private void OnLevelWasLoaded(GameScenes data)
+        private void OnLevelLoaded(GameScenes data)
         {
             ConfiguredContract.ClearStaticState();    // Clear state again in case something accessed the static properties after OnGameSceneLoadRequested
         }
