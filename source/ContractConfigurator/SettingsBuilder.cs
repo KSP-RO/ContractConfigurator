@@ -45,15 +45,9 @@ namespace ContractConfigurator
             toolTip = "#cc.settings.contractMultiplier.desc")]
         public float ActiveContractMultiplier = 1.0f;
 
-        public enum ContractLimitPrestigeOverride
-        {
-            None,
-            Trivial,
-            Significant,
-            Exceptional
-        }
-
-        public ContractLimitPrestigeOverride contractLimitPrestigeOverride = ContractLimitPrestigeOverride.None;
+        public int trivialContractLimit = -1;
+        public int significantContractLimit = -1;
+        public int exceptionalContractLimit = -1;
 
         public enum MissionControlButton
         {
@@ -68,13 +62,17 @@ namespace ContractConfigurator
         public override void OnSave(ConfigNode node)
         {
             node.AddValue("lastMCButton", lastMCButton);
-            node.AddValue("contractLimitPrestigeOverride", contractLimitPrestigeOverride);
+            node.AddValue("trivialContractLimit", trivialContractLimit);
+            node.AddValue("significantContractLimit", significantContractLimit);
+            node.AddValue("exceptionalContractLimit", exceptionalContractLimit);
         }
 
         public override void OnLoad(ConfigNode node)
         {
             lastMCButton = ConfigNodeUtil.ParseValue<MissionControlButton>(node, "lastMCButton", MissionControlButton.All);
-            contractLimitPrestigeOverride = ConfigNodeUtil.ParseValue<ContractLimitPrestigeOverride>(node, "contractLimitPrestigeOverride", ContractLimitPrestigeOverride.None);
+            trivialContractLimit = ConfigNodeUtil.ParseValue<int>(node, "trivialContractLimit", -1);
+            significantContractLimit = ConfigNodeUtil.ParseValue<int>(node, "significantContractLimit", -1);
+            exceptionalContractLimit = ConfigNodeUtil.ParseValue<int>(node, "exceptionalContractLimit", -1);
         }
     }
 

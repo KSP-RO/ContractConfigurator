@@ -573,28 +573,23 @@ namespace ContractConfigurator
                 ScenarioUpgradeableFacilities.GetFacilityLevelCount(SpaceCenterFacility.MissionControl));
             float rep = Reputation.Instance.reputation;
             float mult = HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().ActiveContractMultiplier;
-            switch (HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().contractLimitPrestigeOverride)
-            {
-                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.None:
-                    break;
-                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.Trivial:
-                    prestige = Contract.ContractPrestige.Trivial;
-                    break;
-                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.Significant:
-                    prestige = Contract.ContractPrestige.Significant;
-                    break;
-                case ContractConfiguratorParameters.ContractLimitPrestigeOverride.Exceptional:
-                    prestige = Contract.ContractPrestige.Exceptional;
-                    break;
-            }
             switch (prestige)
             {
                 case Contract.ContractPrestige.Trivial:
-                    return Math.Max(2, (int)Math.Round((rep + rep * level / 3) * mult / 200 + 6 + level));
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().trivialContractLimit >= 0)
+                        return HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().trivialContractLimit;
+                    else
+                        return Math.Max(2, (int)Math.Round((rep + rep * level / 3) * mult / 200 + 6 + level));   
                 case Contract.ContractPrestige.Significant:
-                    return Math.Max(1, (int)Math.Round((rep + rep * level / 3) * mult / 250 + 4 + level));
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().significantContractLimit >= 0)
+                        return HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().significantContractLimit;
+                    else
+                        return Math.Max(1, (int)Math.Round((rep + rep * level / 3) * mult / 250 + 4 + level));
                 case Contract.ContractPrestige.Exceptional:
-                    return Math.Max(0, (int)Math.Round((rep + rep * level / 3) * mult / (1000 / 3.0) + 2 + level));
+                    if (HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().exceptionalContractLimit >= 0)
+                        return HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().exceptionalContractLimit;
+                    else
+                        return Math.Max(0, (int)Math.Round((rep + rep * level / 3) * mult / (1000 / 3.0) + 2 + level));
             }
             return 0;
         }
