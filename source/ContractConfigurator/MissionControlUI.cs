@@ -805,6 +805,9 @@ namespace ContractConfigurator.Util
 
         public void OnClickAll(bool selected)
         {
+            // Update the contract counts even if not selected (KSP overrides it otherwise)
+            UpdateContractCounts();
+            
             if (!selected)
             {
                 return;
@@ -832,9 +835,6 @@ namespace ContractConfigurator.Util
 
             HighLogic.CurrentGame.Parameters.CustomParams<ContractConfiguratorParameters>().lastMCButton =
                 ContractConfiguratorParameters.MissionControlButton.All;
-
-            // Update the contract counts
-            UpdateContractCounts();
         }
 
         public void OnClickActive(bool selected)
