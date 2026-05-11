@@ -45,6 +45,7 @@ namespace ContractConfigurator
             toolTip = "#cc.settings.contractMultiplier.desc")]
         public float ActiveContractMultiplier = 1.0f;
 
+        // off by default, these are for other mods to change the contract limits if they so please. otherwise we use the normal formula in ContractLimit()
         public int trivialContractLimit = -1;
         public int significantContractLimit = -1;
         public int exceptionalContractLimit = -1;
