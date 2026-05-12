@@ -282,7 +282,7 @@ namespace ContractConfigurator
                             if (p.protoModuleCrew.Contains(pcm))
                             {
                                 // Command seats
-                                if (p.partName == "kerbalEVA")
+                                if (p.partInfo.name == "kerbalEVA")
                                 {
                                     vessel.parts.Remove(p);
                                 }

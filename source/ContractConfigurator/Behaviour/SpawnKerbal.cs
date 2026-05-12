@@ -507,7 +507,7 @@ namespace ContractConfigurator.Behaviour
                                     if (p.protoModuleCrew.Contains(kerbal.kerbal.pcm))
                                     {
                                         // Command seats
-                                        if (p.partName == "kerbalEVA")
+                                        if (p.partInfo.name == "kerbalEVA")
                                         {
                                             vessel.parts.Remove(p);
                                         }
