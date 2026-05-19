@@ -506,6 +506,10 @@ namespace ContractConfigurator.Behaviour
                         {
                             crewMember.ChangeName(cd.name);
                         }
+                        if (cd.gender != null)
+                        {
+                            crewMember.gender = cd.gender.Value;
+                        }
 
                         crewArray[i++] = crewMember;
                     }
