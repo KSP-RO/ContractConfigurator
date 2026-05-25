@@ -758,7 +758,15 @@ namespace ContractConfigurator
                 // Check prestige
                 if (prestige.Count > 0 && !prestige.Contains(contract.Prestige))
                 {
-                    throw new ContractRequirementException("Wrong prestige level.");
+                    if (prestige.Count == 1 && contract.ContractState == Contract.State.Active)
+                    {
+                        contract.Prestige = prestige.First();
+                        LoggingUtil.LogInfo(this,  "Setting prestige level to {0} for contract of type {1} ({2}).", contract.Prestige.ToString(), name, contract.Title);
+                    }
+                    else
+                    {
+                        throw new ContractRequirementException("Wrong prestige level.");
+                    }
                 }
 
                 // Do a Research Bodies check, if applicable
