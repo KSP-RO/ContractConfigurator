@@ -39,7 +39,6 @@ namespace ContractConfigurator
         public static int attemptedContracts = 0;
 
         private List<Contract> contractsToUpdate = new List<Contract>();
-        private static List<Assembly> badAssemblies = new List<Assembly>();
 
         [Obsolete("Use GameEvents.Contract.onParameterChange instead")]
         public static EventData<Contract, ContractParameter> OnParameterChange = new EventData<Contract, ContractParameter>("OnParameterChange");
@@ -511,36 +510,13 @@ namespace ContractConfigurator
 
         public static IEnumerable<Type> GetAllTypes<T>()
         {
-            // Get everything that extends the given type
             List<Type> allTypes = new List<Type>();
-            foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
             {
-                IEnumerable<Type> types = null;
-                try
-                {
-                    types = from type in assembly.GetTypes() where (type.IsSubclassOf(typeof(T)) || type.GetInterface(typeof(T).Name) != null) select type;
-                }
-                catch (Exception e)
-                {
-                    // Only log once
-                    if (!badAssemblies.Contains(assembly))
-                    {
-                        LoggingUtil.LogException(new Exception(StringBuilderCache.Format("Error loading types from assembly {0}", assembly.FullName), e));
-                        badAssemblies.Add(assembly);
-                    }
-                    continue;
-                }
-
-                foreach (Type t in types)
-                {
-                    Type foundType = t;
-
-                    if (foundType != null)
-                    {
-                        yield return foundType;
-                    }
-                }
-            }
+                if (t.IsSubclassOf(typeof(T)) || t.GetInterface(typeof(T).Name) != null)
+                    allTypes.Add(t);
+            });
+            return allTypes;
         }
 
         private void DoNothing() { }

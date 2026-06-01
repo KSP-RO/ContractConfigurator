@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text;
 using ContractConfigurator.ExpressionParser;
 
@@ -77,24 +76,11 @@ namespace ContractConfigurator
                             // ignoring namespace
                             string typeName = levelExceptionNode.GetValue("type");
                             Type type = null;
-                            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
+                            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
                             {
-                                try
-                                {
-                                    foreach (Type t in a.GetTypes())
-                                    {
-                                        if (t.Name == typeName || t.Name.StartsWith(typeName + '`'))
-                                        {
-                                            type = t;
-                                            break;
-                                        }
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    UnityEngine.Debug.LogWarning(StringBuilderCache.Format("[WARNING] Error loading types from assembly {0}: {1}", a.FullName, e.Message));
-                                }
-                            }
+                                if (type == null && (t.Name == typeName || t.Name.StartsWith(typeName + '`')))
+                                    type = t;
+                            });
 
                             if (type != null)
                             {

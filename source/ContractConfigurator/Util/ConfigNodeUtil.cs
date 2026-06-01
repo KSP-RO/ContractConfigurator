@@ -1040,24 +1040,22 @@ namespace ContractConfigurator
                 }
 
                 // Get all assemblies, but look at the ContractConfigurator ones first
-                foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies().
-                    OrderBy(a => a.FullName.Contains("ContractConfigurator") ? 0 :
-                        a.FullName.Contains("Assembly-CSharp") ? 1 : 2))
+                List<Type> candidates = new List<Type>();
+                AssemblyLoader.loadedAssemblies.TypeOperation(t =>
                 {
-                    try
-                    {
-                        Type type = assembly.GetTypes().Where(t => t.Name == name).OrderBy(t => t.FullName.Length).FirstOrDefault();
-                        if (type != null)
-                        {
-                            // Cache it
-                            typeMap[name] = type;
-                            return type;
-                        }
-                    }
-                    catch
-                    {
-                        // Ignore exception, as assembly type errors gets logged elsewhere
-                    }
+                    if (t.Name == name)
+                        candidates.Add(t);
+                });
+                Type type = candidates
+                    .OrderBy(t => t.Assembly.FullName.Contains("ContractConfigurator") ? 0 :
+                        t.Assembly.FullName.Contains("Assembly-CSharp") ? 1 : 2)
+                    .ThenBy(t => t.FullName.Length)
+                    .FirstOrDefault();
+                if (type != null)
+                {
+                    // Cache it
+                    typeMap[name] = type;
+                    return type;
                 }
 
                 throw new ArgumentException("'" + name + "' is not a valid type.");

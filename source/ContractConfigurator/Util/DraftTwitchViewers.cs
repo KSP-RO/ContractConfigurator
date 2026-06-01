@@ -43,7 +43,14 @@ namespace ContractConfigurator
             }
             LoggingUtil.LogDebug(this, "Found DraftTwitchViewers assembly.");
 
-            Type draftManager = dtvAssembly.GetTypes().Where(t => t.Name.Contains("ScenarioDraftManager")).FirstOrDefault();
+            Type draftManager = null;
+            AssemblyLoader.LoadedAssembly loadedDtv = AssemblyLoader.loadedAssemblies
+                .FirstOrDefault(la => la.assembly == dtvAssembly);
+            loadedDtv?.TypeOperation(t =>
+            {
+                if (draftManager == null && t.Name.Contains("ScenarioDraftManager"))
+                    draftManager = t;
+            });
             if (draftManager == null)
             {
                 LoggingUtil.LogError(this, "Couldn't get ScenarioDraftManager from DraftTwitchViewers!");

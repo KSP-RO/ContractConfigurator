@@ -87,11 +87,17 @@ namespace ContractConfigurator
 
             LogFormatted_DebugOnly("Attempting to Grab ResearchBodies Types...");
 
-            //find the base type
-            RBAPIType = AssemblyLoader.loadedAssemblies
-                .Select(a => a.assembly.GetExportedTypes())
-                .SelectMany(t => t)
-                .FirstOrDefault(t => t.FullName == "ResearchBodies.ResearchBodies");
+            // Find all required ResearchBodies types in one pass
+            AssemblyLoader.loadedAssemblies.TypeOperation(t =>
+            {
+                switch (t.FullName)
+                {
+                    case "ResearchBodies.ResearchBodies": RBAPIType = t; break;
+                    case "ResearchBodies.ResearchBodiesController": RBSCAPIType = t; break;
+                    case "ResearchBodies.Database": RBDBAPIType = t; break;
+                    case "ResearchBodies.CelestialBodyInfo": RBDBCelestialBodyType = t; break;
+                }
+            });
 
             if (RBAPIType == null)
             {
@@ -100,33 +106,15 @@ namespace ContractConfigurator
 
             LogFormatted_DebugOnly("ResearchBodies Version:{0}", RBAPIType.Assembly.GetName().Version.ToString());
 
-            //find the base type
-            RBSCAPIType = AssemblyLoader.loadedAssemblies
-                .Select(a => a.assembly.GetExportedTypes())
-                .SelectMany(t => t)
-                .FirstOrDefault(t => t.FullName == "ResearchBodies.ResearchBodiesController");
-
             if (RBSCAPIType == null)
             {
                 return false;
             }
 
-            //find the base type
-            RBDBAPIType = AssemblyLoader.loadedAssemblies
-                .Select(a => a.assembly.GetExportedTypes())
-                .SelectMany(t => t)
-                .FirstOrDefault(t => t.FullName == "ResearchBodies.Database");
-
             if (RBDBAPIType == null)
             {
                 return false;
             }
-
-            //find the CelestialBodyInfo type
-            RBDBCelestialBodyType = AssemblyLoader.loadedAssemblies
-                .Select(a => a.assembly.GetExportedTypes())
-                .SelectMany(t => t)
-                .FirstOrDefault(t => t.FullName == "ResearchBodies.CelestialBodyInfo");
 
             if (RBDBCelestialBodyType == null)
             {
