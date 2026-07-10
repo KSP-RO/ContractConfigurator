@@ -5,7 +5,6 @@
     "name": "Contract Configurator",
     "abstract": "A config-file based solution for creating new contracts!",
     "license": "MIT",
-    "release_status": "stable",
     "author": [ "nightingale", "KSP-RO team" ],
     "$vref": "#/ckan/ksp-avc",
     "ksp_version_strict" : true,
