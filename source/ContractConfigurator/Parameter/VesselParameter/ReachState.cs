@@ -186,7 +186,10 @@ namespace ContractConfigurator.Parameters
                     output = Localizer.Format("#cc.param.Orbit.between.meters", Localizer.GetStringByTag("#cc.param.ReachState.altitudeTerrain"), minTerrainAltitude.ToString("N0"), maxTerrainAltitude.ToString("N0"));
                 }
 
-                AddParameter(new ParameterDelegate<Vessel>(output, v => v.heightFromTerrain >= minTerrainAltitude && v.heightFromTerrain <= maxTerrainAltitude));
+                // Match the in-game altimeter (AGL): radarAltitude is derived from PQSAltitude().
+                // It is an analytic solution and does not rely on terrain colliders.
+                // Note that radarAltitude has weird behavior for bodies with below datum terrain.
+                AddParameter(new ParameterDelegate<Vessel>(output, v => v.radarAltitude >= minTerrainAltitude && v.radarAltitude <= maxTerrainAltitude));
             }
 
             // Filter for speed
