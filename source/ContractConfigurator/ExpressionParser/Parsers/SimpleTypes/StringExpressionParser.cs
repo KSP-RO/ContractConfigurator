@@ -93,7 +93,7 @@ namespace ContractConfigurator.ExpressionParser
                 else
                 {
                     // Check for an immediate function call 
-                    Match m = Regex.Match(expression, @"^\w[\w\d]*\(");
+                    Match m = Regex.Match(expression, @"^[A-Za-z][A-Za-z0-9_]*\(");
                     if (m.Success)
                     {
                         return base.ParseStatement<TResult>();
@@ -110,7 +110,7 @@ namespace ContractConfigurator.ExpressionParser
                     int dataStoreIdentifierIndex = m.Success ? m.Index : -1;
 
                     // Look for function calls
-                    m = Regex.Match(expression, @"(\A|\s)\w[\w\d]*\(");
+                    m = Regex.Match(expression, @"(\A|\s)[A-Za-z][A-Za-z0-9_]*\(");
                     int functionIndex = m == Match.Empty ? -1 : m.Index;
 
                     // Look for an end quote
