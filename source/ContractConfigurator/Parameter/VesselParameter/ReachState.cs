@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
-using UnityEngine;
-using KSP;
 using Contracts;
 using Contracts.Parameters;
+using KSP;
 using KSP.Localization;
+using UnityEngine;
 using static FlightGlobals;
-using System.Security.Policy;
 
 namespace ContractConfigurator.Parameters
 {
@@ -35,6 +36,8 @@ namespace ContractConfigurator.Parameters
         protected double maxDeltaVeeActual { get; set; }
         protected double minDeltaVeeVacuum { get; set; }
         protected double maxDeltaVeeVacuum { get; set; }
+        protected double minDownrange { get; set; }
+        protected double maxDownrange { get; set; }
         protected float updateFrequency { get; set; }
 
         private float lastUpdate = 0.0f;
@@ -51,7 +54,7 @@ namespace ContractConfigurator.Parameters
         public ReachState(List<CelestialBody> targetBodies, string biome, List<Vessel.Situations> situation, float minAltitude, float maxAltitude,
             float minTerrainAltitude, float maxTerrainAltitude, double minSpeed, double maxSpeed, SpeedDisplayModes? speedMode, double minRateOfClimb,
             double maxRateOfClimb, float minAcceleration, float maxAcceleration, double minDeltaVeeActual, double maxDeltaVeeActual, double minDeltaVeeVacuum,
-            double maxDeltaVeeVacuum, string title, float updateFrequency)
+            double maxDeltaVeeVacuum, double minDownrange, double maxDownrange, string title, float updateFrequency)
             : base(title)
         {
             this.targetBodies = targetBodies;
@@ -72,6 +75,8 @@ namespace ContractConfigurator.Parameters
             this.maxDeltaVeeActual = maxDeltaVeeActual;
             this.minDeltaVeeVacuum = minDeltaVeeVacuum;
             this.maxDeltaVeeVacuum = maxDeltaVeeVacuum;
+            this.minDownrange = minDownrange;
+            this.maxDownrange = maxDownrange;
             this.updateFrequency = updateFrequency;
 
             CreateDelegates();
@@ -294,6 +299,25 @@ namespace ContractConfigurator.Parameters
 
                 AddParameter(new ParameterDelegate<Vessel>(output, CheckVesselDeltaVeeVacuum));
             }
+
+            if (minDownrange != 0.0 || maxDownrange != double.MaxValue)
+            {
+                string output;
+                if (minDownrange == 0.0)
+                {
+                    output = Localizer.Format("#cc.param.ReachState.below.downrange", Localizer.GetStringByTag("#cc.downrange"), maxDownrange.ToString("N0"));
+                }
+                else if (maxDownrange == double.MaxValue)
+                {
+                    output = Localizer.Format("#cc.param.ReachState.above.downrange", Localizer.GetStringByTag("#cc.downrange"), minDownrange.ToString("N0"));
+                }
+                else
+                {
+                    output = Localizer.Format("#cc.param.ReachState.between.downrange", Localizer.GetStringByTag("#cc.downrange"), minDownrange.ToString("N0"), maxDownrange.ToString("N0"));
+                }
+
+                AddParameter(new ParameterDelegate<Vessel>(output, CheckDownrange));
+            }
         }
 
         private bool CheckBiome(Vessel vessel)
@@ -349,6 +373,15 @@ namespace ContractConfigurator.Parameters
         {
             double deltaVee = vessel.VesselDeltaV.TotalDeltaVActual;
             return deltaVee >= minDeltaVeeVacuum && deltaVee <= maxDeltaVeeVacuum;
+        }
+
+        private bool CheckDownrange(Vessel vessel)
+        {
+            CelestialBody homeBody = FlightGlobals.GetHomeBody();
+            Vector3d surfaceNVector = homeBody.GetSurfaceNVector(SpaceCenter.Instance.Latitude, SpaceCenter.Instance.Longitude);
+            Vector3d surfaceNVector2 = homeBody.GetSurfaceNVector(FlightGlobals.ActiveVessel.latitude, FlightGlobals.ActiveVessel.longitude);
+            double num = homeBody.Radius * Vector3d.Angle(surfaceNVector, surfaceNVector2) * Math.PI / 180;
+            return num >= this.minDownrange && num <= this.maxDownrange;
         }
 
         private bool CheckVesselRateOfClimb(Vessel vessel)
@@ -456,6 +489,15 @@ namespace ContractConfigurator.Parameters
             {
                 node.AddValue("maxDeltaVeeVacuum ", maxDeltaVeeVacuum);
             }
+
+            if (minDownrange != 0.0)
+            {
+                node.AddValue("minDownrange", minDownrange);
+            }
+            if (maxDownrange != double.MaxValue)
+            {
+                node.AddValue("maxDownrange ", maxDownrange);
+            }
         }
 
         protected override void OnParameterLoad(ConfigNode node)
@@ -482,6 +524,8 @@ namespace ContractConfigurator.Parameters
                 maxDeltaVeeActual = ConfigNodeUtil.ParseValue<double>(node, "maxDeltaVeeActual", double.MaxValue);
                 minDeltaVeeVacuum = ConfigNodeUtil.ParseValue<double>(node, "minDeltaVeeVacuum", 0.0);
                 maxDeltaVeeVacuum = ConfigNodeUtil.ParseValue<double>(node, "maxDeltaVeeVacuum", double.MaxValue);
+                minDownrange = ConfigNodeUtil.ParseValue<double>(node, "minDownrange", 0.0);
+                maxDownrange = ConfigNodeUtil.ParseValue<double>(node, "maxDownrange", double.MaxValue);
 
                 CreateDelegates();
             }
