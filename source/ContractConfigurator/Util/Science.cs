@@ -457,7 +457,9 @@ namespace ContractConfigurator.Util
 
                     foreach (string pname in rules.part)
                     {
-                        foreach (AvailablePart p in PartLoader.Instance.loadedParts.Where(p => p.name == pname))
+                        // AvailablePart.name has '_' replaced by '.', accept either spelling in the config
+                        string dotted = pname.Replace('_', '.');
+                        foreach (AvailablePart p in PartLoader.Instance.loadedParts.Where(p => p.name == pname || p.name == dotted))
                         {
                             experimentParts[rules.id].Add(p);
                         }
