@@ -457,9 +457,10 @@ namespace ContractConfigurator.Util
 
                     foreach (string pname in rules.part)
                     {
-                        // AvailablePart.name has '_' replaced by '.', accept either spelling in the config
-                        string dotted = pname.Replace('_', '.');
-                        foreach (AvailablePart p in PartLoader.Instance.loadedParts.Where(p => p.name == pname || p.name == dotted))
+                        // Part names can't contain '_' (craft files use it to separate the flight ID), so KSP
+                        // replaces it with '.' on load. Same normalization as ConfigNodeUtil.ParsePartValue.
+                        string partName = pname.Replace('_', '.');
+                        foreach (AvailablePart p in PartLoader.Instance.loadedParts.Where(p => p.name == partName))
                         {
                             experimentParts[rules.id].Add(p);
                         }
