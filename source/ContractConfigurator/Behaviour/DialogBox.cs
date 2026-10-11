@@ -30,6 +30,22 @@ namespace ContractConfigurator.Behaviour
             }
         }
 
+        /// <summary>
+        /// Draws a portrait texture. The stock portrait material draws nothing on OpenGL Core (Linux), so there
+        /// we fall back to Unity's default GUI material, whose neutral tint is 0.5 instead of 1.0.
+        /// </summary>
+        private static void DrawPortrait(Rect rect, Texture texture, int border)
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.OpenGLCore)
+            {
+                Graphics.DrawTexture(rect, texture, new Rect(0.0f, 0.0f, 1f, 1f), border, border, border, border, new Color(0.5f, 0.5f, 0.5f, 0.5f));
+            }
+            else
+            {
+                Graphics.DrawTexture(rect, texture, new Rect(0.0f, 0.0f, 1f, 1f), border, border, border, border, Color.white, PortraitRenderMaterial);
+            }
+        }
+
         #region enums
         public enum TriggerCondition
         {
@@ -504,7 +520,7 @@ namespace ContractConfigurator.Behaviour
                 {
                     Rect rect = GUILayoutUtility.GetLastRect();
                     rect = new Rect(rect.x + 1f, rect.y + 1f, rect.width - 2f, rect.height - 2f);
-                    Graphics.DrawTexture(rect, instructorTexture, new Rect(0.0f, 0.0f, 1f, 1f), 124, 124, 124, 124, Color.white, PortraitRenderMaterial);
+                    DrawPortrait(rect, instructorTexture, 124);
                 }
 
                 DisplayName(128);
@@ -659,7 +675,7 @@ namespace ContractConfigurator.Behaviour
                 {
                     Rect rect = GUILayoutUtility.GetLastRect();
                     rect = new Rect(rect.x + 1f, rect.y + 1f, rect.width - 2f, rect.height - 2f);
-                    Graphics.DrawTexture(rect, texture, new Rect(0.0f, 0.0f, 1f, 1f), 0, 0, 0, 0, Color.white, PortraitRenderMaterial);
+                    DrawPortrait(rect, texture, 0);
                 }
 
                 DisplayName(128);
