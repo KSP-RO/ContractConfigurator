@@ -142,6 +142,22 @@ namespace ContractConfigurator
 
             IEnumerable<ProtoPartSnapshot> parts = vessel.protoVessel.protoPartSnapshots;
 
+            // ProtoPartSnapshot.parent is only set on snapshots made from loaded parts. For a vessel that
+            // hasn't been loaded since the save was read it is null on every part, which left only the root
+            // part in the hash. Fall back to parentIdx, which is always read from the save.
+            List<ProtoPartSnapshot> partList = vessel.protoVessel.protoPartSnapshots;
+            Dictionary<ProtoPartSnapshot, ProtoPartSnapshot> parentOf = new Dictionary<ProtoPartSnapshot, ProtoPartSnapshot>();
+            for (int i = 0; i < partList.Count; i++)
+            {
+                ProtoPartSnapshot pps = partList[i];
+                ProtoPartSnapshot parent = pps.parent;
+                if (parent == null && pps.parentIdx >= 0 && pps.parentIdx < partList.Count && pps.parentIdx != i)
+                {
+                    parent = partList[pps.parentIdx];
+                }
+                parentOf[pps] = parent;
+            }
+
             // Add the root
             if (vessel.protoVessel.protoPartSnapshots.Any())
             {
@@ -205,13 +221,13 @@ namespace ContractConfigurator
                         decoupler = true;
 
                         // Parent may be null if this is the root of the stack
-                        if (p.parent != null)
+                        if (parentOf[p] != null)
                         {
-                            dockedParts[p.parent.flightID] = p.parent.flightID;
+                            dockedParts[parentOf[p].flightID] = parentOf[p].flightID;
                         }
 
                         // Add all children as possible new vessels
-                        foreach (ProtoPartSnapshot child in parts.Where(p1 => p1.parent == p))
+                        foreach (ProtoPartSnapshot child in parts.Where(p1 => parentOf[p1] == p))
                         {
                             dockedParts[child.flightID] = child.flightID;
                         }
@@ -241,7 +257,7 @@ namespace ContractConfigurator
                 }
 
                 // Go through our child parts
-                foreach (ProtoPartSnapshot child in parts.Where(p3 => p3.parent == p))
+                foreach (ProtoPartSnapshot child in parts.Where(p3 => parentOf[p3] == p))
                 {
                     if (!visited.ContainsKey(child))
                     {
@@ -251,10 +267,10 @@ namespace ContractConfigurator
                 }
 
                 // Confirm if parent part has been visited
-                if (p.parent != null && !visited.ContainsKey(p.parent))
+                if (parentOf[p] != null && !visited.ContainsKey(parentOf[p]))
                 {
-                    queue.Enqueue(p.parent);
-                    visited[p.parent] = 1;
+                    queue.Enqueue(parentOf[p]);
+                    visited[parentOf[p]] = 1;
                 }
 
                 // Add this part to the hash
