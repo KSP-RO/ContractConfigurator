@@ -286,7 +286,9 @@ namespace ContractConfigurator
 
                 if (newVessel != null)
                 {
+                    LoggingUtil.LogDebug(this, "Moving association for '{0}' from {1} to {2}", key, vessel.id, newVessel.id);
                     vi.id = newVessel.id;
+                    OnVesselAssociation.Fire(new GameEvents.HostTargetAction<Vessel, string>(newVessel, key));
                 }
                 else
                 {
