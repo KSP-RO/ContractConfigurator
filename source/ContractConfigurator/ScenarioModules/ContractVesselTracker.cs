@@ -222,8 +222,13 @@ namespace ContractConfigurator
             // Check the lists and see if we need to do a switch
             foreach (string key in vesselKeys)
             {
+                // Event handlers fired by earlier iterations may have removed the key
+                if (!vessels.TryGetValue(key, out VesselInfo vi))
+                {
+                    continue;
+                }
+
                 // Check if we need to switch over to the newly created vessel
-                VesselInfo vi = vessels[key];
                 if (otherVesselHashes.Contains(vi.hash))
                 {
                     LoggingUtil.LogDebug(this, "Moving association for '{0}' from {1} to {2}", key, vi.id, lastBreak.id);
@@ -233,8 +238,13 @@ namespace ContractConfigurator
             }
             foreach (string key in otherVesselKeys)
             {
+                // Event handlers fired by earlier iterations may have removed the key
+                if (!vessels.TryGetValue(key, out VesselInfo vi))
+                {
+                    continue;
+                }
+
                 // Check if we need to switch over to the newly created vessel
-                VesselInfo vi = vessels[key];
                 if (vesselHashes.Contains(vi.hash))
                 {
                     LoggingUtil.LogDebug(this, "Moving association for '{0}' from {1} to {2}", key, vi.id, vessel.id);
@@ -263,8 +273,13 @@ namespace ContractConfigurator
             {
                 LoggingUtil.LogVerbose(this, "    checking key {0}", key);
 
+                // Event handlers fired by earlier iterations may have removed the key
+                if (!vessels.TryGetValue(key, out VesselInfo vi))
+                {
+                    continue;
+                }
+
                 // Check if we need to switch over to the newly created vessel
-                VesselInfo vi = vessels[key];
                 Vessel newVessel = FlightGlobals.Vessels.Find(v =>
                 {
                     if (v != null && v != vessel)
