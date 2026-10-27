@@ -144,7 +144,7 @@ namespace ContractConfigurator
                         // If found, verify the hash
                         else
                         {
-                            IEnumerable<uint> hashes = vessel.GetHashes();
+                            List<uint> hashes = vessel.GetHashes().ToList();
                             if (hashes.Any() && !hashes.Contains(vi.hash))
                             {
                                 LoggingUtil.LogVerbose(this, "Setting hash for {0} on save from {1} to {2}", vi.id, vi.hash, hashes.FirstOrDefault());
