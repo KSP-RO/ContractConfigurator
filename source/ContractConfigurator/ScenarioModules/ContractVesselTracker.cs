@@ -123,6 +123,8 @@ namespace ContractConfigurator
 
         public override void OnSave(ConfigNode node)
         {
+            Profiler.BeginSample("CC-CVT-OnSave");
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 base.OnSave(node);
@@ -168,6 +170,12 @@ namespace ContractConfigurator
                 LoggingUtil.LogError(this, "Error saving ContractVesselTracker to persistance file!");
                 LoggingUtil.LogException(e);
                 ExceptionLogWindow.DisplayFatalException(ExceptionLogWindow.ExceptionSituation.SCENARIO_MODULE_SAVE, e, "ContractVesselTracker");
+            }
+            finally
+            {
+                sw.Stop();
+                Profiler.EndSample();
+                LoggingUtil.LogDebug(this, "OnSave took {0:F2} ms for {1} tracked vessels, {2} vessels in game", sw.Elapsed.TotalMilliseconds, vessels.Count, FlightGlobals.Vessels.Count);
             }
         }
 
