@@ -269,8 +269,6 @@ namespace ContractConfigurator
                 {
                     if (v != null && v != vessel)
                     {
-                        // GetHashes walks the live part tree of a loaded vessel, so a vessel that just
-                        // grappled this one is seen with the grappled parts.
                         return v.GetHashes().Contains(vi.hash);
                     }
                     return false;

@@ -11,6 +11,18 @@ using ContractConfigurator.Parameters;
 namespace ContractConfigurator
 {
     /// <summary>
+    /// One part of a vessel as GetHashes sees it, read from a loaded Part or from a ProtoPartSnapshot.
+    /// </summary>
+    internal class HashPart
+    {
+        public uint flightID;
+        public int parent = -1;
+        public List<int> children = new List<int>();
+        public bool decoupler;
+        public List<uint> grappledParts = new List<uint>();
+    }
+
+    /// <summary>
     /// Static class with extensions to stock classes.
     /// </summary>
     public static class Extensions
@@ -112,21 +124,9 @@ namespace ContractConfigurator
             return quantity;
         }
 
-        /// <summary>
-        /// One part of a vessel as GetHashes sees it, read from a loaded Part or from a ProtoPartSnapshot.
-        /// </summary>
-        private class HashPart
-        {
-            public uint flightID;
-            public int parent = -1;
-            public List<int> children = new List<int>();
-            public bool decoupler;
-            public List<uint> grappledParts = new List<uint>();
-        }
-
         private static bool IsDecouplingModule(string moduleName)
         {
-            return moduleName == "ModuleDecouple" || moduleName == "ModuleDockingNode" || moduleName == "ModuleGrappleNode";
+            return moduleName == "ModuleDecouple" || moduleName == "ModuleAnchoredDecoupler" || moduleName == "ModuleDockingNode" || moduleName == "ModuleGrappleNode";
         }
 
         /// <summary>
