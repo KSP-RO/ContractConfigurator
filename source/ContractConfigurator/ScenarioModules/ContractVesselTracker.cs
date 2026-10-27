@@ -284,16 +284,6 @@ namespace ContractConfigurator
                 {
                     if (v != null && v != vessel)
                     {
-                        LoggingUtil.LogVerbose(this, "    loading protovessel for {0}", v.vesselName);
-
-                        // If the vessel is loaded, refresh the protovessel.  We do this to support
-                        // grappling - when a new vessel is grappled the protovessel information
-                        // doesn't get properly updated.
-                        if (v.loaded)
-                        {
-                            v.protoVessel = new ProtoVessel(v);
-                        }
-
                         return v.GetHashes().Contains(vi.hash);
                     }
                     return false;

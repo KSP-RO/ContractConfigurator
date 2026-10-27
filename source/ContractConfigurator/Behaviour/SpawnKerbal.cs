@@ -532,7 +532,7 @@ namespace ContractConfigurator.Behaviour
                                         // Command seats
                                         if (pps.partName.StartsWith("kerbalEVA"))
                                         {
-                                            vessel.protoVessel.protoPartSnapshots.Remove(pps);
+                                            vessel.protoVessel.RemovePart(pps);
                                         }
                                         // Everything else
                                         else
