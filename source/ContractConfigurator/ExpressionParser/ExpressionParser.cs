@@ -1353,7 +1353,7 @@ namespace ContractConfigurator.ExpressionParser
 
         public Token ParseIdentifier()
         {
-            Match m = Regex.Match(expression, @"([A-Za-z][\w\d]*).*");
+            Match m = Regex.Match(expression, @"([A-Za-z][A-Za-z0-9_]*).*");
             string identifier = m.Groups[1].Value;
             expression = (expression.Length > identifier.Length ? expression.Substring(identifier.Length) : "");
 
@@ -1365,7 +1365,7 @@ namespace ContractConfigurator.ExpressionParser
 
         public Token ParseSpecialIdentifier()
         {
-            Match m = Regex.Match(expression, @"^@(/?(?>([A-Za-z][\w\d]*|\.\.)/)*[A-Za-z][\w\d:]*).*");
+            Match m = Regex.Match(expression, @"^@(/?(?>(?:[A-Za-z][A-Za-z0-9_]*|\.\.)/)*[A-Za-z][A-Za-z0-9_]*(?::[A-Za-z][A-Za-z0-9_]*)*).*");
             string identifier = m.Groups[1].Value;
             expression = (expression.Length > identifier.Length + 1 ? expression.Substring(identifier.Length + 1) : "");
 
@@ -1374,7 +1374,7 @@ namespace ContractConfigurator.ExpressionParser
 
         public Token ParseDataStoreIdentifier()
         {
-            Match m = Regex.Match(expression, @"^\$(/?(?>([A-Za-z][\w\d]*|\.\.)/)*[A-Za-z][\w\d:]*).*");
+            Match m = Regex.Match(expression, @"^\$(/?(?>(?:[A-Za-z][A-Za-z0-9_]*|\.\.)/)*[A-Za-z][A-Za-z0-9_]*(?::[A-Za-z][A-Za-z0-9_]*)*).*");
             string identifier = m.Groups[1].Value;
             expression = (expression.Length > identifier.Length + 1 ? expression.Substring(identifier.Length + 1) : "");
 

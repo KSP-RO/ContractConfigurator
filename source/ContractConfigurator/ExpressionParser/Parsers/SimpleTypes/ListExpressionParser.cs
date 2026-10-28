@@ -230,7 +230,7 @@ namespace ContractConfigurator.ExpressionParser
                 ParseToken("(");
 
                 // Get the identifier for the object
-                Match m = Regex.Match(expression, @"([A-Za-z][\w\d]*)[\s]*=>[\s]*(.*)");
+                Match m = Regex.Match(expression, @"([A-Za-z][A-Za-z0-9_]*)[\s]*=>[\s]*(.*)");
                 string identifier = m.Groups[1].Value;
                 expression = (string.IsNullOrEmpty(identifier) ? expression : m.Groups[2].Value);
 
