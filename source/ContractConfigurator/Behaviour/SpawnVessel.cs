@@ -39,6 +39,7 @@ namespace ContractConfigurator.Behaviour
             public string name = null;
             public ProtoCrewMember.Gender? gender = null;
             public bool addToRoster = true;
+            public string trait;
 
             public CrewData() { }
 
@@ -47,6 +48,7 @@ namespace ContractConfigurator.Behaviour
                 name = cd.name;
                 gender = cd.gender;
                 addToRoster = cd.addToRoster;
+                trait = cd.trait;
             }
         }
 
@@ -125,6 +127,7 @@ namespace ContractConfigurator.Behaviour
 
             foreach (VesselData vessel in orig.vessels)
             {
+                LoggingUtil.LogVerbose(this, "SpawnVessel adding vessel: {0}  {1}", vessel.name, vessel.id);
                 if (vessel.pqsCity != null)
                 {
                     // Generate PQS city coordinates
@@ -155,6 +158,7 @@ namespace ContractConfigurator.Behaviour
 
         public static SpawnVessel Create(ConfigNode configNode, SpawnVesselFactory factory)
         {
+            LoggingUtil.LogVerbose(typeof(SpawnVessel), "SpawnVessel Create ");
             SpawnVessel spawnVessel = new SpawnVessel();
             bool dummy = false;
             ConfigNodeUtil.ParseValue<bool>(configNode, "deferVesselCreation", x => dummy = x, factory, false); // deferVesselCreation is deprecated
@@ -181,18 +185,22 @@ namespace ContractConfigurator.Behaviour
                     if (child.HasValue("name"))
                     {
                         valid &= ConfigNodeUtil.ParseValue<string>(child, "name", x => vessel.name = x, factory);
+                        LoggingUtil.LogVerbose(typeof(SpawnVessel), "SpawnVessel Create parsed vessel name: {0}", vessel.name);
                     }
 
                     // Get craft details
                     if (child.HasValue("craftURL"))
                     {
                         valid &= ConfigNodeUtil.ParseValue<string>(child, "craftURL", x => vessel.craftURL = x, factory);
+                        LoggingUtil.LogVerbose(typeof(SpawnVessel), "SpawnVessel Create parsed craftURL: {0}", vessel.craftURL);
                     }
                     if (child.HasValue("craftPart"))
                     {
                         valid &= ConfigNodeUtil.ParseValue<AvailablePart>(child, "craftPart", x => vessel.craftPart = x, factory);
+                        LoggingUtil.LogVerbose(typeof(SpawnVessel), "SpawnVessel Create parsed craftPart: {0}", vessel.craftPart);
                     }
                     valid &= ConfigNodeUtil.AtLeastOne(child, new string[] { "craftURL", "craftPart" }, factory);
+
 
                     valid &= ConfigNodeUtil.ParseValue<string>(child, "flagURL", x => vessel.flagURL = x, factory, (string)null);
                     valid &= ConfigNodeUtil.ParseValue<VesselType>(child, "vesselType", x => vessel.vesselType = x, factory, VesselType.Ship);
@@ -262,14 +270,47 @@ namespace ContractConfigurator.Behaviour
                     {
                         int count = 1;
                         valid &= ConfigNodeUtil.ParseValue<int>(crewNode, "count", x => count = x, factory, 1);
+                        LoggingUtil.LogVerbose(typeof(SpawnVessel), "SpawnVessel Create found {0} crew nodes", count);
                         for (int i = 0; i < count; i++)
                         {
                             CrewData cd = new CrewData();
 
                             // Read crew details
-                            valid &= ConfigNodeUtil.ParseValue<string>(crewNode, "name", x => cd.name = x, factory, (string)null); 
-                            valid &= ConfigNodeUtil.ParseValue<ProtoCrewMember.Gender>(crewNode, "gender", x => cd.gender = x, factory, 0);
                             valid &= ConfigNodeUtil.ParseValue<bool>(crewNode, "addToRoster", x => cd.addToRoster = x, factory, true);
+                            valid &= ConfigNodeUtil.ParseValue<string>(crewNode, "trait", x => cd.trait = x, factory, (string)null);
+
+                            // addToRoster = true with tourists has issues because any kerbal with addToRoster = true will be set to type crew on recovery.
+                            if (cd.addToRoster && cd.trait == "Tourist")
+                            {
+                                cd.addToRoster = false;
+                                LoggingUtil.LogWarning(typeof(SpawnVessel), "WARNING in SpawnVessel CREW node: Tourist trait kerbals should not be added to the roster. It only works with crew.");
+                                LoggingUtil.LogWarning(typeof(SpawnVessel), " addToRoster has been set to false.");
+                            }
+
+                            // ProtoCrewMember.Gender type does not allow a null value. 
+                            //If we want gender to be random if left empty, we need to handle it here. (Or add some awkward extra variable)
+                            if (crewNode.HasValue("gender"))
+                            {
+                                valid &= ConfigNodeUtil.ParseValue<ProtoCrewMember.Gender>(crewNode, "gender", x => cd.gender = x, factory);
+                            }
+                            else
+                            {
+                                cd.gender = Kerbal.RandomGender();
+                            }
+
+                            // It is a bit of a workaround but if the final name is not set here, RecoverKerbal will get very confused and fail.
+                            //Specifically RecoverKerbal never figures out which kerbal to recover if a name is not set here. 
+                            if (crewNode.HasValue("name"))
+                            {
+                                valid &= ConfigNodeUtil.ParseValue<string>(crewNode, "name", x => cd.name = x, factory);
+                            }
+                            else
+                            {
+                                // Random name
+                                cd.name = Kerbal.KerbalName(cd.gender.Value);
+                            }
+
+                            LoggingUtil.LogVerbose(typeof(SpawnVessel), "SpawnVessel Create crewNode parsed Kerbal specs: {0} {1} {2} {3}", cd.name, cd.gender, cd.addToRoster, cd.trait);
 
                             // Check for unexpected values
                             valid &= ConfigNodeUtil.ValidateUnexpectedValues(crewNode, factory);
@@ -347,6 +388,8 @@ namespace ContractConfigurator.Behaviour
                 ConfigNode[] partNodes;
                 UntrackedObjectClass sizeClass;
                 ShipConstruct shipConstruct = null;
+
+                // This is for a craftURL. If a pod is input, the else fires below.
                 if (!string.IsNullOrEmpty(vesselData.craftURL))
                 {
                     // Save the current ShipConstruction ship, otherwise the player will see the spawned ship next time they enter the VAB!
@@ -426,6 +469,7 @@ namespace ContractConfigurator.Behaviour
                         sizeClass = GetObjectSize(8);
                     }
 
+                    //Handle the crew for a craftURL. Much of this code repeats below where the pod option is handled. Changes should be made in both places.
                     foreach (CrewData cd in vesselData.crew)
                     {
                         bool success = false;
@@ -436,23 +480,57 @@ namespace ContractConfigurator.Behaviour
                         // Add the crew member
                         if (part != null)
                         {
+
+                            // Search for existing crew member who is available
                             ProtoCrewMember crewMember = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(cm => cm.name == cd.name && cm.rosterStatus == ProtoCrewMember.RosterStatus.Available).FirstOrDefault<ProtoCrewMember>();
-                            // Create the ProtoCrewMember if does not exist
+                            // If we did not find an existing crew, spawn them.
                             if (crewMember == null || crewMember.name != cd.name)
                             {
-                                crewMember = HighLogic.CurrentGame.CrewRoster.GetNewKerbal(ProtoCrewMember.KerbalType.Unowned);
-                                if (cd.gender != null)
+                                LoggingUtil.LogVerbose(this, "SpawnVessel went looking for: {0} and but they do not exist yet or are not Available. Creating.", cd.name);
+                                // Create the ProtoCrewMember
+                                if (cd.trait != "Tourist")
                                 {
-                                    crewMember.gender = cd.gender.Value;
+                                    crewMember = HighLogic.CurrentGame.CrewRoster.GetNewKerbal(ProtoCrewMember.KerbalType.Unowned);
                                 }
-                                if (cd.name != null)
+                                else
                                 {
-                                    crewMember.ChangeName(cd.name);
+                                    crewMember = HighLogic.CurrentGame.CrewRoster.GetNewKerbal(ProtoCrewMember.KerbalType.Tourist);
+                                }
+
+                                // If none were input, a random name and gender were set in Create when parsing the cfg file. We just use whatever is in CrewData. There should always be a non null value.
+                                crewMember.gender = cd.gender.Value;
+                                crewMember.ChangeName(cd.name);
+
+                                if (!string.IsNullOrEmpty(cd.trait))
+                                {
+                                    KerbalRoster.SetExperienceTrait(crewMember, cd.trait);
+                                }
+                                LoggingUtil.LogVerbose(this, "SpawnVessel new crewMember: {0} Gender {1} Type: {2} Trait: {3}", crewMember.name, crewMember.gender, crewMember.type, crewMember.trait);
+                            }
+                            else // Found an existing kerbal who is ProtoCrewMember.RosterStatus.Available
+                            {
+                                LoggingUtil.LogVerbose(this, "SpawnVessel went looking for: {0} and found them!", cd.name);
+
+                                if (!cd.addToRoster)
+                                {
+                                    LoggingUtil.LogWarning(this, "WARNING setting SpawnVessel crew addToRoster = False with an existing kerbal is a BAD IDEA. Strange things happen.");
+                                }
+
+                                if (!string.IsNullOrEmpty(cd.trait))
+                                {
+                                    LoggingUtil.LogWarning(this, "SpawnVessel crew received an existing kerbal named '{0}' and a trait {1}. Trait is ignored.", cd.name, cd.trait);
+                                    LoggingUtil.LogWarning(this, "     To alter an existing kerbal, use Behaviour ChangeKerbalType");
                                 }
                             }
-                            
+
+
                             // Add them to the part
                             success = part.AddCrewmemberAt(crewMember, part.protoModuleCrew.Count);
+                            if (success) 
+                            {
+                                //Tourist only works if this is set explicitly.
+                                crewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
+                            }
                         }
 
                         if (!success)
@@ -493,23 +571,59 @@ namespace ContractConfigurator.Behaviour
                     }
                     GameObject.Destroy(dummyVessel.gameObject);
                 }
-                else
+
+                else // No craft URL so a single part (pod) must have been input
                 {
-                    // Create crew member array
+                    //Handle the crew for a pod. Much of this code repeats above where the craftURL option is handled. Changes should be made in both places.
                     ProtoCrewMember[] crewArray = new ProtoCrewMember[vesselData.crew.Count];
                     int i = 0;
                     foreach (CrewData cd in vesselData.crew)
                     {
-                        // Create the ProtoCrewMember
-                        ProtoCrewMember crewMember = HighLogic.CurrentGame.CrewRoster.GetNewKerbal(ProtoCrewMember.KerbalType.Unowned);
-                        if (cd.name != null)
+
+                        // Search for existing crew member who is available
+                        ProtoCrewMember crewMember = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(cm => cm.name == cd.name && cm.rosterStatus == ProtoCrewMember.RosterStatus.Available).FirstOrDefault<ProtoCrewMember>();
+                        // If we did not find an existing crew, spawn them.
+                        if (crewMember == null || crewMember.name != cd.name)
                         {
-                            crewMember.ChangeName(cd.name);
-                        }
-                        if (cd.gender != null)
-                        {
+                            LoggingUtil.LogVerbose(this, "SpawnVessel went looking for: {0} and but they do not exist yet or are not Available. Creating.", cd.name);
+                            // Create the ProtoCrewMember
+                            if (cd.trait != "Tourist")
+                            {
+                                crewMember = HighLogic.CurrentGame.CrewRoster.GetNewKerbal(ProtoCrewMember.KerbalType.Unowned);
+                            }
+                            else
+                            {
+                                crewMember = HighLogic.CurrentGame.CrewRoster.GetNewKerbal(ProtoCrewMember.KerbalType.Tourist);
+                            }
+
+                            // If none were input, a random name and gender were set in Create when parsing the cfg file. We just use whatever is in CrewData. There should always be a non null value.
                             crewMember.gender = cd.gender.Value;
+                            crewMember.ChangeName(cd.name);
+
+                            if (!string.IsNullOrEmpty(cd.trait))
+                            {
+                                KerbalRoster.SetExperienceTrait(crewMember, cd.trait);
+                            }
+                            LoggingUtil.LogVerbose(this, "SpawnVessel new crewMember: {0} Gender {1} Type: {2} Trait: {3}", crewMember.name, crewMember.gender, crewMember.type, crewMember.trait);
                         }
+                        else // Found an existing kerbal who is ProtoCrewMember.RosterStatus.Available
+                        {
+                            LoggingUtil.LogVerbose(this, "SpawnVessel went looking for: {0} and found them!", cd.name);
+
+                            if (!cd.addToRoster)
+                            {
+                                LoggingUtil.LogWarning(this, "WARNING setting SpawnVessel crew addToRoster = False with an existing kerbal is a BAD IDEA. Strange things happen.");
+                            }
+
+                            if (!string.IsNullOrEmpty(cd.trait))
+                            {
+                                LoggingUtil.LogWarning(this, "SpawnVessel crew received an existing kerbal named '{0}' and a trait {1}. Trait is ignored.", cd.name, cd.trait);
+                                LoggingUtil.LogWarning(this, "     To alter an existing kerbal, use Behaviour ChangeKerbalType");
+                            }
+                        }
+
+                        //Tourist only works if this is set explicitly.
+                        crewMember.rosterStatus = ProtoCrewMember.RosterStatus.Assigned;
 
                         crewArray[i++] = crewMember;
                     }
@@ -517,7 +631,16 @@ namespace ContractConfigurator.Behaviour
                     // Create part nodes
                     uint flightId = ShipConstruction.GetUniqueFlightID(HighLogic.CurrentGame.flightState);
                     partNodes = new ConfigNode[1];
+                    
                     partNodes[0] = ProtoVessel.CreatePartNode(vesselData.craftPart.name, flightId, crewArray);
+
+                    
+                    // Make noise if the pod does not have enough room for the input crew
+                    if (vesselData.craftPart.partPrefab.CrewCapacity < vesselData.crew.Count)
+                    {
+                        LoggingUtil.LogWarning(this, "SpawnVessel not enough room for the crew in pod: {0}. Input crew count: {1}, Crew Capacity: {2}", vesselData.craftPart.name, vesselData.crew.Count, vesselData.craftPart.partPrefab.CrewCapacity);
+                    }
+                    
 
                     // Default the size class
                     sizeClass = UntrackedObjectClass.A;
@@ -698,12 +821,18 @@ namespace ContractConfigurator.Behaviour
                 {
                     ConfigNode crewNode = new ConfigNode("CREW");
 
+                    // These are defaulted so never null. Hopefully
+                    crewNode.AddValue("gender", cd.gender); 
+                    crewNode.AddValue("addToRoster", cd.addToRoster);
+
                     if (!string.IsNullOrEmpty(cd.name))
                     {
                         crewNode.AddValue("name", cd.name);
                     }
-                    crewNode.AddValue("gender", cd.gender);
-                    crewNode.AddValue("addToRoster", cd.addToRoster);
+                    if (!string.IsNullOrEmpty(cd.trait))
+                    {
+                        crewNode.AddValue("trait", cd.trait);
+                    }
 
                     child.AddNode(crewNode);
                 }
@@ -759,6 +888,8 @@ namespace ContractConfigurator.Behaviour
                     cd.gender = ConfigNodeUtil.ParseValue<ProtoCrewMember.Gender>(crewNode, "gender", 0);
                     cd.addToRoster = ConfigNodeUtil.ParseValue<bool>(crewNode, "addToRoster");
 
+                    cd.trait = ConfigNodeUtil.ParseValue<string>(crewNode, "trait", (string)null);
+
                     vd.crew.Add(cd);
                 }
 
@@ -779,54 +910,73 @@ namespace ContractConfigurator.Behaviour
 
         private void OnVesselRecovered(ProtoVessel v, bool quick)
         {
-            LoggingUtil.LogVerbose(this, "OnVesselRecovered: {0}", v);
+            LoggingUtil.LogVerbose(this, "OnVesselRecovered: {0}", v.vesselName);
 
             // EVA vessel
             if (v.vesselType == VesselType.EVA)
             {
+                LoggingUtil.LogVerbose(this, "VesselType.EVA");
                 foreach (ProtoPartSnapshot p in v.protoPartSnapshots)
                 {
+                    LoggingUtil.LogVerbose(this, "    p: {0}", p);
+                    foreach (string name in p.protoCrewNames)
                     {
-                        LoggingUtil.LogVerbose(this, "    p: {0}", p);
-                        foreach (string name in p.protoCrewNames)
+                        // Find this crew member in our data, if they are in the list
+                        foreach (VesselData vd in vessels)
                         {
-                            // Find this crew member in our data
-                            foreach (VesselData vd in vessels)
+                            foreach (CrewData cd in vd.crew)
                             {
-                                foreach (CrewData cd in vd.crew)
+                                if (cd.name == name)
                                 {
-                                    if (cd.name == name && cd.addToRoster)
+                                    LoggingUtil.LogVerbose(this, "        SpawnVessel recovered EVA kerbal: {0}", name);
+                                    if (cd.addToRoster)
                                     {
                                         // Add them to the roster
                                         ProtoCrewMember pcm = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(cm => cm.name == cd.name).First();
                                         pcm.type = ProtoCrewMember.KerbalType.Crew;
+                                        LoggingUtil.LogVerbose(this, "          added to roster: {0}", name);
+                                    }
+                                    else
+                                    {
+                                        LoggingUtil.LogVerbose(this, "OnVesselRecovered calling RemoveCrewmember: {0}", cd.name);
+                                        RemoveCrewmember(cd);
                                     }
                                 }
                             }
                         }
                     }
                 }
-
             }
-
-            // Vessel with crew
-            foreach (ProtoCrewMember crewMember in v.GetVesselCrew())
+            else // Not EVA
             {
-                // Find this crew member in our data
-                foreach (VesselData vd in vessels)
+                // Vessel with crew
+                foreach (ProtoCrewMember crewMember in v.GetVesselCrew())
                 {
-                    foreach (CrewData cd in vd.crew)
+                    LoggingUtil.LogVerbose(this, "SpawnVessel recovered kerbal: {0}", crewMember.name);
+
+                    // Find this crew member in our data, if they are in our data...
+                    foreach (VesselData vd in vessels)
                     {
-                        if (cd.name == crewMember.name && cd.addToRoster)
+                        foreach (CrewData cd in vd.crew)
                         {
-                            // Add them to the roster
-                            ProtoCrewMember pcm = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(cm => cm.name == cd.name).First();
-                            pcm.type = ProtoCrewMember.KerbalType.Crew;
+                            if (cd.name == crewMember.name)
+                            {
+                                if (cd.addToRoster)
+                                {
+                                    // Add them to the roster
+                                    ProtoCrewMember pcm = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(cm => cm.name == cd.name).First();
+                                    pcm.type = ProtoCrewMember.KerbalType.Crew;
+                                    LoggingUtil.LogVerbose(this, "   added to roster: {0}", cd.name);
+                                }
+                                else
+                                {
+                                    // Remove anyone who is not addToRoster. The game will handle any kerbals who were not spawned in SpawnVessel.
+                                    LoggingUtil.LogVerbose(this, "OnVesselRecovered calling RemoveCrewmember: {0}", vd.name);
+                                    RemoveCrewmember(cd);
+                                }
+                            }
                         }
                     }
-
-                    // Remove any other crew
-                    RemoveCrew(vd);
                 }
             }
         }
@@ -936,6 +1086,7 @@ namespace ContractConfigurator.Behaviour
                                 {
                                     if (p.protoModuleCrew.Contains(crewMember))
                                     {
+                                        LoggingUtil.LogVerbose(this, "SpawnVessel loaded RemoveCrewmember : {0}", crewMember.name);
                                         p.RemoveCrewmember(crewMember);
                                         break;
                                     }
@@ -947,6 +1098,7 @@ namespace ContractConfigurator.Behaviour
                                 {
                                     if (pps.HasCrew(crewMember.name))
                                     {
+                                        LoggingUtil.LogVerbose(this, "SpawnVessel proto RemoveCrew : {0}", crewMember.name);
                                         pps.RemoveCrew(crewMember);
                                     }
                                 }
@@ -957,6 +1109,54 @@ namespace ContractConfigurator.Behaviour
                     // Remove the kerbal from the roster
                     HighLogic.CurrentGame.CrewRoster.Remove(cd.name);
                 }
+            }
+        }
+
+        private void RemoveCrewmember(CrewData cd)
+        {
+            LoggingUtil.LogVerbose(this, "RemoveCrewmember cd name: {0}", cd.name);
+
+            ProtoCrewMember crewMember = HighLogic.CurrentGame.CrewRoster.AllKerbals().Where(pcm => pcm.name == cd.name).FirstOrDefault();
+            if (!cd.addToRoster && crewMember != null)
+            {
+                Vessel otherVessel = FlightGlobals.Vessels.Where(v => v.GetVesselCrew().Contains(crewMember)).FirstOrDefault();
+                if (otherVessel != null)
+                {
+                    // If it's an EVA make them disappear...
+                    if (otherVessel.isEVA)
+                    {
+                        FlightGlobals.Vessels.Remove(otherVessel);
+                    }
+                    else
+                    {
+                        if (otherVessel.loaded)
+                        {
+                            foreach (Part p in otherVessel.parts)
+                            {
+                                if (p.protoModuleCrew.Contains(crewMember))
+                                {
+                                    LoggingUtil.LogVerbose(this, "SpawnVessel loaded RemoveCrewmember : {0}", crewMember.name);
+                                    p.RemoveCrewmember(crewMember);
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            foreach (ProtoPartSnapshot pps in otherVessel.protoVessel.protoPartSnapshots)
+                            {
+                                if (pps.HasCrew(crewMember.name))
+                                {
+                                    LoggingUtil.LogVerbose(this, "SpawnVessel proto RemoveCrew : {0}", crewMember.name);
+                                    pps.RemoveCrew(crewMember);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Remove the kerbal from the roster
+                HighLogic.CurrentGame.CrewRoster.Remove(cd.name);
             }
         }
 
