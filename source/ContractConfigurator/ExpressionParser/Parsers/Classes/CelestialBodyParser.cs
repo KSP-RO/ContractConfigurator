@@ -100,7 +100,7 @@ namespace ContractConfigurator.ExpressionParser
 
             RegisterMethod(new Method<CelestialBody, Orbit>("Orbit", cb => cb?.orbit));
             RegisterMethod(new Method<CelestialBody, double>("GM", cb => cb != null ? cb.gravParameter : 0.0));
-            
+
             RegisterGlobalFunction(new Function<CelestialBody>("HomeWorld", () => FlightGlobals.Bodies.Where(cb => cb.isHomeWorld).First()));
             RegisterGlobalFunction(new Function<CelestialBody>("Sun", () => FlightGlobals.Bodies[0]));
             RegisterGlobalFunction(new Function<List<CelestialBody>>("AllBodies", () => FlightGlobals.Bodies.Where(cb => cb != null && cb.Radius >= BARYCENTER_THRESHOLD).ToList()));
