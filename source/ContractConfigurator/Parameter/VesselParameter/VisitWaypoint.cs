@@ -28,11 +28,22 @@ namespace ContractConfigurator.Parameters
             {
                 visitWaypoint = vw;
                 GameEvents.Contract.onParameterChange.Add(OnParameterChange);
+                GameEvents.onGameSceneLoadRequested.Add(OnGameSceneLoadRequested);
             }
 
             public void UnbindFromEvents()
             {
                 GameEvents.Contract.onParameterChange.Remove(OnParameterChange);
+                GameEvents.onGameSceneLoadRequested.Remove(OnGameSceneLoadRequested);
+            }
+
+            /// <summary>
+            /// Contracts are re-created on every scene load, and parameters of finished contracts never get unregistered.
+            /// Unbind here so the old instances don't stay subscribed.
+            /// </summary>
+            protected void OnGameSceneLoadRequested(GameScenes scene)
+            {
+                UnbindFromEvents();
             }
 
             protected void OnParameterChange(Contract c, ContractParameter p)
