@@ -39,7 +39,7 @@ namespace ContractConfigurator.Behaviour
             public string name = null;
             public ProtoCrewMember.Gender? gender = null;
             public bool addToRoster = true;
-            public string trait;
+            public string trait = null;
 
             public CrewData() { }
 
@@ -511,11 +511,6 @@ namespace ContractConfigurator.Behaviour
                             {
                                 LoggingUtil.LogVerbose(this, "SpawnVessel went looking for: {0} and found them!", cd.name);
 
-                                if (!cd.addToRoster)
-                                {
-                                    LoggingUtil.LogWarning(this, "WARNING setting SpawnVessel crew addToRoster = False with an existing kerbal is a BAD IDEA. Strange things happen.");
-                                }
-
                                 if (!string.IsNullOrEmpty(cd.trait))
                                 {
                                     LoggingUtil.LogWarning(this, "SpawnVessel crew received an existing kerbal named '{0}' and a trait {1}. Trait is ignored.", cd.name, cd.trait);
@@ -609,11 +604,6 @@ namespace ContractConfigurator.Behaviour
                         else // Found an existing kerbal who is ProtoCrewMember.RosterStatus.Available
                         {
                             LoggingUtil.LogVerbose(this, "SpawnVessel went looking for: {0} and found them!", cd.name);
-
-                            if (!cd.addToRoster)
-                            {
-                                LoggingUtil.LogWarning(this, "WARNING setting SpawnVessel crew addToRoster = False with an existing kerbal is a BAD IDEA. Strange things happen.");
-                            }
 
                             if (!string.IsNullOrEmpty(cd.trait))
                             {
