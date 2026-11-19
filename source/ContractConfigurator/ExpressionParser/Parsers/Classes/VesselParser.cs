@@ -27,6 +27,13 @@ namespace ContractConfigurator.ExpressionParser
             RegisterMethod(new Method<Vessel, bool>("IsLanded", v => v != null && v.Landed, false));
             RegisterMethod(new Method<Vessel, bool>("IsSplashed", v => v != null && v.Splashed, false));
             RegisterMethod(new Method<Vessel, bool>("IsOrbiting", v => v != null && !v.LandedOrSplashed, false));
+            RegisterMethod(new Method<Vessel, bool>("IsTracked", v => v != null && 
+                (v.DiscoveryInfo.Level == DiscoveryLevels.StateVectors || v.DiscoveryInfo.Level == DiscoveryLevels.Unowned || v.DiscoveryInfo.Level == DiscoveryLevels.Owned), false));
+            RegisterMethod(new Method<Vessel, bool>("IsDetected", v => v != null && 
+                (v.DiscoveryInfo.Level == DiscoveryLevels.Presence || v.DiscoveryInfo.Level == DiscoveryLevels.Unowned || v.DiscoveryInfo.Level == DiscoveryLevels.Owned) , false));
+            RegisterMethod(new Method<Vessel, bool>("IsOwned", v => v != null && v.DiscoveryInfo.Level == DiscoveryLevels.Owned, false));
+            RegisterMethod(new Method<Vessel, bool>("IsFreeComet", IsFreeComet, false));
+            RegisterMethod(new Method<Vessel, bool>("IsFreeAsteroid", IsFreeAsteroid, false));
 
             RegisterMethod(new Method<Vessel, List<Kerbal>>("Crew", v => v == null ? new List<Kerbal>() : v.GetVesselCrew().
                 Select<ProtoCrewMember, Kerbal>(pcm => new Kerbal(pcm)).ToList(), false));
@@ -46,6 +53,8 @@ namespace ContractConfigurator.ExpressionParser
             RegisterMethod(new Method<Vessel, Resource, double>("ResourceCapacity", (v, r) => v == null || r == null ? 0.0 : v.ResourceCapacity(r.res), false));
 
             RegisterMethod(new Method<Vessel, float>("Mass", v => v == null ? 0.0f : v.GetTotalMass(), false));
+            RegisterMethod(new Method<Vessel, int>("SizeClassInt", v => v == null || v.DiscoveryInfo == null ? 0 : (int)v.DiscoveryInfo.objectSize, false));
+            RegisterMethod(new Method<Vessel, string>("SizeClassString", v => v == null || v.DiscoveryInfo == null ? "none" : v.DiscoveryInfo.size.Value, false));
             RegisterMethod(new Method<Vessel, double>("XDimension", GetXDimension, false));
             RegisterMethod(new Method<Vessel, double>("YDimension", GetYDimension, false));
             RegisterMethod(new Method<Vessel, double>("ZDimension", GetZDimension, false));
@@ -70,6 +79,98 @@ namespace ContractConfigurator.ExpressionParser
 
         public VesselParser()
         {
+        }
+
+        /// <summary>
+        /// Test if a vessel is a free flying comet. Free flying means not currently grabbed and part of a larger vessel.
+        /// Use AllVessels().Where(v => v.Parts().Contains(AvailablePart(PotatoComet)) to search for a vessel with an attached comet.
+        /// IsFreeComet is designed to be fast. Thus the limitation.
+        /// </summary>
+        /// <param name="v">The vessel to check.</param>
+        /// <returns>True if it is a SpaceObject and a comet. False if vessel is a ship with a grabbed comet.</returns>
+        static bool IsFreeComet(Vessel v)
+        {
+            
+            if (v == null)
+            {
+                return false;
+            }
+            else if (v.vesselType != VesselType.SpaceObject)
+            {
+                return false;
+            }
+            else
+            {
+                //return HasPartName(v, "PotatoComet"); but below is faster
+                if (v.loaded)
+                {
+                    if (v.parts.FirstOrDefault().partName == "PotatoComet")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (v.protoVessel == null || v.protoVessel.protoPartSnapshots == null || v.protoVessel.protoPartSnapshots.FirstOrDefault().partName != "PotatoComet")
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                    
+            }
+        }
+
+        /// <summary>
+        /// Test if a vessel is a free flying asteroid. Free flying means not currently grabbed and part of a larger vessel.
+        /// Use AllVessels().Where(v => v.Parts().Contains(AvailablePart(PotatoRoid)) to search for a vessel with an attached asteroid.
+        /// IsFreeAsteroid is designed to be fast. Thus the limitation.
+        /// </summary>
+        /// <param name="v">The vessel to check.</param>
+        /// <returns>True if it is a SpaceObject and an asteroid. False if vessel is a ship with a grabbed asteroid.</returns>
+        static bool IsFreeAsteroid(Vessel v)
+        {
+            if (v == null)
+            {
+                return false;
+            }
+            else if (v.vesselType != VesselType.SpaceObject)
+            {
+                return false;
+            }
+            else
+            {
+                //return HasPartName(v, "PotatoRoid"); but below if faster.
+                if (v.loaded)
+                {
+                    if (v.parts.FirstOrDefault().partName == "PotatoRoid")
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (v.protoVessel == null || v.protoVessel.protoPartSnapshots == null || v.protoVessel.protoPartSnapshots.FirstOrDefault().partName != "PotatoRoid")
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+            }
         }
 
         static List<AvailablePart> PartList(Vessel v)

@@ -32,7 +32,9 @@ namespace ContractConfigurator.ExpressionParser
             ORBITED,
             LANDED,
             ESCAPED,
-            RETURNED_FROM
+            RETURNED_FROM,
+            RETURNED_FROM_ORBIT,
+            RETURNED_FROM_SURFACE
         }
 
         static CelestialBodyParser()
@@ -62,6 +64,8 @@ namespace ContractConfigurator.ExpressionParser
             RegisterMethod(new Method<CelestialBody, bool>("HaveLandedOn", cb => IsReached(cb, ProgressItem.LANDED), false));
             RegisterMethod(new Method<CelestialBody, bool>("HaveEscaped", cb => IsReached(cb, ProgressItem.ESCAPED), false));
             RegisterMethod(new Method<CelestialBody, bool>("HaveReturnedFrom", cb => IsReached(cb, ProgressItem.RETURNED_FROM), false));
+            RegisterMethod(new Method<CelestialBody, bool>("HaveReturnedFromOrbit", cb => IsReached(cb, ProgressItem.RETURNED_FROM_ORBIT), false));
+            RegisterMethod(new Method<CelestialBody, bool>("HaveReturnedFromSurface", cb => IsReached(cb, ProgressItem.RETURNED_FROM_SURFACE), false));
 
             RegisterMethod(new Method<CelestialBody, bool>("CanHaveKolniyaOrbit", cb => cb != null && CelestialUtilities.CanBodyBeKolniya(cb)));
             RegisterMethod(new Method<CelestialBody, double, bool>("CanHaveSynchronousOrbit", (cb, ecc) => cb != null && CelestialUtilities.CanBodyBeSynchronous(cb, ecc)));
@@ -69,8 +73,10 @@ namespace ContractConfigurator.ExpressionParser
 
             RegisterMethod(new Method<CelestialBody, double>("Radius", cb => cb != null ? cb.Radius : 0.0));
             RegisterMethod(new Method<CelestialBody, double>("Mass", cb => cb != null ? cb.Mass : 0.0));
+            RegisterMethod(new Method<CelestialBody, double>("GravAccelerationASL", cb => cb != null ? cb.GeeASL : 0.0));
             RegisterMethod(new Method<CelestialBody, double>("RotationalPeriod", cb => cb != null ? cb.rotationPeriod : 0.0));
             RegisterMethod(new Method<CelestialBody, double>("AtmosphereAltitude", cb => cb != null ? cb.atmosphereDepth : 0.0));
+            RegisterMethod(new Method<CelestialBody, double>("AtmospherePressureASL", cb => cb != null ? cb.atmPressureASL : 0.0)); // Or atmospherePressureSeaLevel ?
             RegisterMethod(new Method<CelestialBody, float>("FlyingAltitudeThreshold", cb => cb != null ? cb.scienceValues.flyingAltitudeThreshold : 0.0f));
             RegisterMethod(new Method<CelestialBody, float>("SpaceAltitudeThreshold", cb => cb != null ? cb.scienceValues.spaceAltitudeThreshold : 0.0f));
             RegisterMethod(new Method<CelestialBody, double>("SphereOfInfluence", cb => cb != null ? cb.sphereOfInfluence : 0.0));
@@ -162,6 +168,10 @@ namespace ContractConfigurator.ExpressionParser
                     return tree.escape != null && tree.escape.IsComplete;
                 case ProgressItem.RETURNED_FROM:
                     return tree.returnFromFlyby != null && tree.returnFromFlyby.IsComplete;
+                case ProgressItem.RETURNED_FROM_ORBIT:
+                    return tree.returnFromOrbit != null && tree.returnFromOrbit.IsComplete;
+                case ProgressItem.RETURNED_FROM_SURFACE:
+                    return tree.returnFromSurface != null && tree.returnFromSurface.IsComplete;
             }
 
             return false;

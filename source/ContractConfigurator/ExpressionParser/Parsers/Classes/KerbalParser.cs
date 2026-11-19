@@ -24,6 +24,9 @@ namespace ContractConfigurator.ExpressionParser
 
         public static void RegisterMethods()
         {
+            RegisterMethod(new Method<Kerbal, CelestialBody, bool>("HasOrbited", (k, b) => k == null || b == null || k.pcm == null || k.pcm.careerLog == null ? false : k.pcm.careerLog.HasEntry(FlightLog.EntryType.Orbit, b.name) ));
+            RegisterMethod(new Method<Kerbal, CelestialBody, bool>("HasLandedOn", (k, b) => k == null || b == null || k.pcm == null || k.pcm.careerLog == null ? false : k.pcm.careerLog.HasEntry(FlightLog.EntryType.Land, b.name) ));
+            RegisterMethod(new Method<Kerbal, CelestialBody, bool>("HasPlantedFlagOn", (k, b) => k == null || b == null || k.pcm == null || k.pcm.careerLog == null ? false : k.pcm.careerLog.HasEntry(FlightLog.EntryType.PlantFlag, b.name) ));
             RegisterMethod(new Method<Kerbal, float>("Experience", k => k == null ? 0.0f : k.experience));
             RegisterMethod(new Method<Kerbal, int>("ExperienceLevel", k => k == null ? 0 : k.experienceLevel));
             RegisterMethod(new Method<Kerbal, Experience.ExperienceTrait>("ExperienceTrait", k => k == null ? null : k.pcm.experienceTrait));
