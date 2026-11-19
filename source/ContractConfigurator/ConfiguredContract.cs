@@ -254,8 +254,16 @@ namespace ContractConfigurator
 
         public ConfiguredContract()
         {
-            this.dateExpire = Contract.GameTime + 5.0 * 3600.0 * 6.0;
+            this.expiryType = DeadlineType.None;
             this.IgnoresWeight = true;
+        }
+
+        public bool HasExpiry
+        {
+            get
+            {
+                return expiryType != DeadlineType.None;
+            }
         }
 
         public bool Initialize(ContractType contractType)
@@ -280,11 +288,12 @@ namespace ContractConfigurator
                 if (contractType.maxExpiry == 0.0f)
                 {
                     LoggingUtil.LogDebug(this, "{0}: Setting expirty to none", contractType.name);
-                    SetExpiry();
                     expiryType = DeadlineType.None;
+                    dateExpire = 0.0;
                 }
                 else
                 {
+                    expiryType = DeadlineType.Floating;
                     SetExpiry(contractType.minExpiry, contractType.maxExpiry);
                     // Force set the expiry, in stock this is normally done on Contract.Offer()
                     dateExpire = GameTime + TimeExpiry;
@@ -484,6 +493,12 @@ namespace ContractConfigurator
         {
             try
             {
+                // Old saves kept the preloader's default 30 hour dateExpire on contracts with no expiry
+                if (expiryType == DeadlineType.None)
+                {
+                    dateExpire = 0.0;
+                }
+
                 subType = node.GetValue("subtype");
                 contractType = ContractType.GetContractType(subType);
                 title = ConfigNodeUtil.ParseValue<string>(node, "title", contractType != null ? contractType.title : subType);
